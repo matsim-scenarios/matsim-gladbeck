@@ -18,9 +18,6 @@ package org.matsim.prepare;
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -28,123 +25,108 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.application.MATSimApplication;
-import org.matsim.contrib.bicycle.BicycleConfigGroup;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.ControlerUtils;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
+import org.matsim.core.population.PersonUtils;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.TripStructureUtils.Trip;
-import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.prepare.ShapeFileUtils;
 import org.matsim.run.RunMetropoleRuhrScenario;
+import java.util.HashSet;
+import java.util.Set;
 
-public class CreateQuickGladbeckScenario extends RunMetropoleRuhrScenario {
+public class CreateQuickGladbeckScenario {
 
     private static final Logger log = Logger.getLogger(CreateQuickGladbeckScenario.class);
-    private static String planningAreaShpFile;
+    private static String planningAreaShpFile = "../Input/Gladbeck.shp";
     private static final double linkBuffer = 1000.;
     private static final double personBuffer = 1000.;
 
     public static void main(String[] args) {
-
-        String[] argsWithoutCustomAttributes;
-        for (String arg : args) {
-            log.info(arg);
-        }
-
-        if (args.length == 0) {
-            argsWithoutCustomAttributes = new String[]{"run", "--config", "./scenarios/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0-3pct.config.xml"};
-            planningAreaShpFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/us/los-angeles/los-angeles-v1.0/original-data/shp-data/WSC-LA-planning-area/WSC-LA-planning-area.shp";
-
-        } else {
-            planningAreaShpFile = args[1];
-            log.info("planningAreaShpFile: " + planningAreaShpFile);
-            argsWithoutCustomAttributes = new String[args.length - 1];
-            argsWithoutCustomAttributes[0] = args[0];
-            log.info("config file: " + args[0]);
-            log.info("other arguments: ");
-            for (int n = 2; n < args.length; n++) {
-                argsWithoutCustomAttributes[n - 1] = args[n];
-                log.info(args[n]);
-            }
-            log.info("---------------");
-        }
-        MATSimApplication.run(RunMetropoleRuhrScenario.class, argsWithoutCustomAttributes);
+        log.info(planningAreaShpFile);
+        MATSimApplication.run(GladbeckApplication.class, args);
     }
 
-    @Override
-    public Config prepareConfig(Config config) {
-        var preparedConfig = super.prepareConfig(config);
-        log.info("changing config");
-        preparedConfig.controler().setLastIteration(0);
-        return preparedConfig;
-    }
 
-    @Override
-    protected void prepareScenario(Scenario scenario) {
-        super.prepareScenario(scenario);
-        ShapeFileUtils shpUtils = new ShapeFileUtils(planningAreaShpFile);
-        Set<Id<Link>> linksToDelete = new HashSet<>();
-        for (Link link : scenario.getNetwork().getLinks().values()) {
-            if (shpUtils.isCoordInArea(link.getCoord(), linkBuffer)
-                    || shpUtils.isCoordInArea(link.getFromNode().getCoord(), linkBuffer)
-                    || shpUtils.isCoordInArea(link.getToNode().getCoord(), linkBuffer)
-                    || link.getAllowedModes().contains(TransportMode.pt)
-                    || link.getFreespeed() >= 5.) {
-                // keep the link
-            } else {
-                linksToDelete.add(link.getId());
-            }
+    public static class GladbeckApplication extends RunMetropoleRuhrScenario {
+        @Override
+        public Config prepareConfig(Config config) {
+            var preparedConfig = super.prepareConfig(config);
+            log.info("changing config");
+            preparedConfig.controler().setLastIteration(0);
+            return preparedConfig;
         }
 
-        log.info("Links to delete: " + linksToDelete.size());
-        for (Id<Link> linkId : linksToDelete) {
-            scenario.getNetwork().removeLink(linkId);
-        }
-
-        // clean the network
-        log.info("number of nodes before cleaning:" + scenario.getNetwork().getNodes().size());
-        log.info("number of links before cleaning:" + scenario.getNetwork().getLinks().size());
-        log.info("attempt to clean the network");
-        new MultimodalNetworkCleaner(scenario.getNetwork()).removeNodesWithoutLinks();
-        Set<String> modes = new HashSet<>();
-        modes.add(TransportMode.car);
-        new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
-        log.info("number of nodes after cleaning:" + scenario.getNetwork().getNodes().size());
-        log.info("number of links after cleaning:" + scenario.getNetwork().getLinks().size());
-        // now delete irrelevant persons
-        Set<Id<Person>> personsToDelete = new HashSet<>();
-        for (Person person : scenario.getPopulation().getPersons().values()) {
-            boolean keepPerson = false;
-            for (Trip trip : TripStructureUtils.getTrips(person.getSelectedPlan())) {
-                // keep all agents starting or ending in area
-                if (shpUtils.isCoordInArea(trip.getOriginActivity().getCoord(), personBuffer)
-                        || shpUtils.isCoordInArea(trip.getDestinationActivity().getCoord(), personBuffer)) {
-                    keepPerson = true;
-                    break;
+        @Override
+        protected void prepareScenario(Scenario scenario) {
+            super.prepareScenario(scenario);
+            ShapeFileUtils shpUtils = new ShapeFileUtils(planningAreaShpFile);
+            Set<Id<Link>> linksToDelete = new HashSet<>();
+            for (Link link : scenario.getNetwork().getLinks().values()) {
+                if (shpUtils.isCoordInArea(link.getCoord(), linkBuffer)
+                        || shpUtils.isCoordInArea(link.getFromNode().getCoord(), linkBuffer)
+                        || shpUtils.isCoordInArea(link.getToNode().getCoord(), linkBuffer)
+                        || link.getAllowedModes().contains(TransportMode.bike)
+                        || link.getAllowedModes().contains(TransportMode.pt)
+                        || link.getFreespeed() >= 5.) {
+                    // keep the link
+                } else {
+                    linksToDelete.add(link.getId());
                 }
-                // also keep persons traveling through or close to area (beeline)
-                if (shpUtils.isLineInArea(trip.getOriginActivity().getCoord(), trip.getDestinationActivity().getCoord(), personBuffer)) {
-                    keepPerson = true;
-                    break;
+            }
+
+            log.info("Links to delete: " + linksToDelete.size());
+            for (Id<Link> linkId : linksToDelete) {
+                scenario.getNetwork().removeLink(linkId);
+            }
+
+            // clean the network
+            log.info("number of nodes before cleaning:" + scenario.getNetwork().getNodes().size());
+            log.info("number of links before cleaning:" + scenario.getNetwork().getLinks().size());
+            log.info("attempt to clean the network");
+            new MultimodalNetworkCleaner(scenario.getNetwork()).removeNodesWithoutLinks();
+            Set<String> modes = new HashSet<>();
+            modes.add(TransportMode.car);
+            new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
+            log.info("number of nodes after cleaning:" + scenario.getNetwork().getNodes().size());
+            log.info("number of links after cleaning:" + scenario.getNetwork().getLinks().size());
+            NetworkUtils.writeNetwork(scenario.getNetwork(),"network_reduced.xml");
+            // now delete irrelevant persons
+            Set<Id<Person>> personsToDelete = new HashSet<>();
+            for (Person person : scenario.getPopulation().getPersons().values()) {
+                boolean keepPerson = false;
+                for (Trip trip : TripStructureUtils.getTrips(person.getSelectedPlan())) {
+                    PopulationUtils.resetRoutes(person.getSelectedPlan());
+                    // keep all agents starting or ending in area
+                    if (shpUtils.isCoordInArea(trip.getOriginActivity().getCoord(), personBuffer)
+                            || shpUtils.isCoordInArea(trip.getDestinationActivity().getCoord(), personBuffer)) {
+                        keepPerson = true;
+                        break;
+                    }
+                    // also keep persons traveling through or close to area (beeline)
+                    if (shpUtils.isLineInArea(trip.getOriginActivity().getCoord(), trip.getDestinationActivity().getCoord(), personBuffer)) {
+                        keepPerson = true;
+                        break;
+                    }
+
                 }
-
+                if (!keepPerson) {
+                    personsToDelete.add(person.getId());
+                }
             }
-            if (!keepPerson) {
-                personsToDelete.add(person.getId());
+            log.info("Persons to delete: " + personsToDelete.size());
+            for (Id<Person> personId : personsToDelete) {
+                scenario.getPopulation().removePerson(personId);
             }
+            PopulationUtils.writePopulation(scenario.getPopulation(), "pop_reduced.xml");
         }
-        log.info("Persons to delete: " + personsToDelete.size());
-        for (Id<Person> personId : personsToDelete) {
-            scenario.getPopulation().removePerson(personId);
-        }
-    }
 
-    @Override
-    protected void prepareControler(Controler controler) {
-        super.prepareControler(controler);
+        @Override
+        protected void prepareControler(Controler controler) {
+            super.prepareControler(controler);
+        }
     }
 }
 

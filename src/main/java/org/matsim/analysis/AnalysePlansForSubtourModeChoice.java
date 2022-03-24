@@ -37,11 +37,10 @@ public class AnalysePlansForSubtourModeChoice {
     static final Set<String> RUHRGEBIET_CHAIN_BASED_MODES = Set.of(TransportMode.bike, TransportMode.car);
     private static final Set<String> MODES = Set.of("car", "pt", "bike", "walk");
 
-
     public static void main(String[] args) {
 
         //Population population = PopulationUtils.readPopulation("../../shared-svn/projects/matsim-metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.1-1pct.plans.xml.gz");
-        Population population = PopulationUtils.readPopulation("/Users/gregorr/Desktop/metropole-ruhr-v1.0-10pct.0.plans.xml.gz");
+        Population population = PopulationUtils.readPopulation("/Users/gregorr/Desktop/TestGlaMoBi/output_metropole-ruhr-v1.0-10pct/metropole-ruhr-v1.0-10pct.output_plans.xml.gz");
 //		List<Id<Person>> nonCarUsers = population.getPersons().values().stream()
 //				.filter(person -> !isUser(person, TransportMode.car))
 //				.map(person -> person.getId())
@@ -148,8 +147,6 @@ public class AnalysePlansForSubtourModeChoice {
                 + mobileButFixed + " = " + (100 * (double) mobileButFixed / ((double) population.getPersons().size() - nrOfAgentsWith0Trips) + "%"));
         System.out.println("###################");
         System.out.println("### number of car agents " + nrOfCarAgents);
-        System.out.println("### number of car agents that are not responsive to mobility budget: " + nrOfCarAgentsNotResponsiveToMobilityBudget + " = "
-                + (100 * (double) nrOfCarAgentsNotResponsiveToMobilityBudget / ((double) nrOfCarAgents) + "%"));
         System.out.println("###################");
         List<TripStructureUtils.Subtour> subToursWithAtLeastOneCarLeg = allSubtours.stream()
                 .filter(AnalysePlansForSubtourModeChoice::hasCarLeg)
