@@ -6,10 +6,9 @@
 
 ### About this project
 
-This repository provides a MATSim transport model for the metropolitan area Ruhr (Metropole Ruhr) in Germany, developed by the [Transport Systems Planning and Transport Telematics group](https://www.vsp.tu-berlin.de) of [Technische Universität Berlin](http://www.tu-berlin.de) and the [Regionalverband Ruhr](https://www.rvr.ruhr).
-
+This repository provides a MATSim transport model for the region of Gladbeck in the metropolitan area Ruhr (Metropole Ruhr) in Germany, developed by the [Transport Systems Planning and Transport Telematics group](https://www.vsp.tu-berlin.de) of [Technische Universität Berlin](http://www.tu-berlin.de).
+It is currently under development.
 <a rel="TU Berlin" href="https://www.vsp.tu-berlin.de"><img src="logos/TU_Logo.png" width="15%" height="15%"/></a>
-<a rel="RVR" href="https://www.rvr.ruhr"><img src="logos/Logo_RVR_Pos_CMYK.png" width="30%" height="30%"/></a>
 
 ### Licenses
 
@@ -56,11 +55,11 @@ Handling of large files within git is not without problems (git lfs files are no
 
 (Or use your IDE, e.g. Eclipse, IntelliJ, to clone the repository.)
 
-This will result in a new `matsim-metrople-ruhr` directory.  Memorize where you have put it.  You can move it, as a whole, to some other place.
+This will result in a new `matsim-metrople-gladbeck` directory.  Memorize where you have put it.  You can move it, as a whole, to some other place.
 
 ##### Update your local clone of the repository.
 
-1. Go into the `matsim-metrople-ruhr` directory.
+1. Go into the `matsim-metrople-gladbeck` directory.
 1. Type `git pull`
 
 (Or use your IDE, e.g. Eclipse, IntelliJ, to update the repository.)
@@ -88,7 +87,7 @@ java -jar [FILENAME].jar
 ##### ... using an IDE, e.g. Eclipse, IntelliJ
 1. Set up the project in your IDE.
 1. Make sure the project is configured as maven project.
-1. Run the JAVA class `src/main/java/org/matsim/run/RunMetropoleRuhrScenario.java` or `src/main/java/org/matsim/gui/MATSimGUI.java`.
+1. Run the JAVA class `src/main/java/org/matsim/gui/MATSimGUI.java`.
 1. "Open" the output directory.  You can drag files into VIA as was already done above.
 1. Edit the config file or adjust the run class. Re-run MATSim.
 
@@ -96,7 +95,6 @@ java -jar [FILENAME].jar
 
 For more information about MATSim, see here: https://www.matsim.org/.
 
-For more information about traffic simulation and traffic data at the Regionalverband Ruhr, see here: https://www.rvr.ruhr/themen/mobilitaet/informationssystem-ruhrmobil/
 
 ### Acknowledgements
 
