@@ -42,7 +42,7 @@ public class MobilityBudgetEventHandler implements PersonDepartureEventHandler, 
         if (this.currentIterationMobilityBudget.containsKey(personId) && personDepartureEvent.getLegMode().equals(TransportMode.pt)) {
             // cost pt
             // monetaryConstant + constant * marginalUtilityOfMoney
-            //the values from the config are different depending on the sample size
+            // the values from the config are different depending on the sample size
             this.currentIterationMobilityBudget.replace(personId,0.0);
         }
     }

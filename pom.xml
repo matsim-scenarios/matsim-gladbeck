@@ -89,6 +89,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>vsp</artifactId>
+			<version>${matsim.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
 			<!--MATSim test infrastructure.  Not transitive.-->
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
