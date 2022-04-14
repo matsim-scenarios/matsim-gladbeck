@@ -1,4 +1,4 @@
-# The MATSim 'Metropole Ruhr' Scenario
+# The MATSim 'Gladbeck' Scenario
 
 <!--
 ![Ruhrgebiet MATSim network and agents](scenarios/visualization_network-agents.png "Metropole Ruhr MATSim network and agents")
