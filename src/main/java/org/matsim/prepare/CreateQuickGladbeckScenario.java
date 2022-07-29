@@ -40,7 +40,7 @@ import java.util.Set;
 public class CreateQuickGladbeckScenario {
 
     private static final Logger log = Logger.getLogger(CreateQuickGladbeckScenario.class);
-    private static String planningAreaShpFile = "../Input/Gladbeck.shp";
+    private static String planningAreaShpFile = "/Users/gregorr/Documents/work/respos/shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp";
     private static final double linkBuffer = 1000.;
     private static final double personBuffer = 1000.;
 
