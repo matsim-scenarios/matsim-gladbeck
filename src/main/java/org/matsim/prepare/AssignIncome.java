@@ -22,28 +22,23 @@ package org.matsim.prepare;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.population.PopulationUtils;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
-
 import java.util.Random;
 
 public class AssignIncome {
 
-    // this is a copy from the matsim-berlin scenario
-    // https://github.com/matsim-scenarios/matsim-berlin
+    // TODO why not matsim random, standardized somewhere
+    // this is a copy from the matsim-kelheim scenario
+    // https://github.com/matsim-scenarios/matsim-kelheim/blob/master/src/main/java/org/matsim/run/prepare/PreparePopulation.java
 
     private static final Logger log = Logger.getLogger(AssignIncome.class);
 
-    public static void assignIncomeToPersonSubpopulationAccordingToGermanyAverage(Population population){
-        // https://de.wikipedia.org/wiki/Einkommensverteilung_in_Deutschland
-        // besser https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Einkommen-Konsum-Lebensbedingungen/Einkommen-Einnahmen-Ausgaben/Publikationen/Downloads-Einkommen/einkommensverteilung-2152606139004.pdf?__blob=publicationFile
-        // Anteil der Personen (%) an allen Personen 10 20 30 40 50 60 70 80 90 100
-        // Nettoäquivalenzeinkommen(€) 826 1.142 1.399 1.630 1.847 2.070 2.332 2.659 3.156 4.329
+    public static void assignIncomeToPersonSubpopulationAccordingToSNZData(Population population){
+        final Random rnd = new Random(1234);
 
-        log.info("start assigning income to persons according to german average");
-
-        final Random rnd = MatsimRandom.getLocalInstance();
+        log.info("start assigning income to persons according to SNZ Plans");
 
         population.getPersons().values().stream()
                 .filter(person ->  {
@@ -53,23 +48,59 @@ public class AssignIncome {
                 //don't overwrite income attribute (input plans may have income attributes already)
                 .filter(person -> person.getAttributes().getAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME) == null)
                 .forEach(person -> {
-                    double income = 0.;
-                    double rndDouble = rnd.nextDouble();
-
-                    if (rndDouble <= 0.1) income = 826.;
-                    else if (rndDouble > 0.1 && rndDouble <= 0.2) income = 1142.;
-                    else if (rndDouble > 0.2 && rndDouble <= 0.3) income = 1399.;
-                    else if (rndDouble > 0.3 && rndDouble <= 0.4) income = 1630.;
-                    else if (rndDouble > 0.4 && rndDouble <= 0.5) income = 1847.;
-                    else if (rndDouble > 0.5 && rndDouble <= 0.6) income = 2070.;
-                    else if (rndDouble > 0.6 && rndDouble <= 0.7) income = 2332.;
-                    else if (rndDouble > 0.7 && rndDouble <= 0.8) income = 2659.;
-                    else if (rndDouble > 0.8 && rndDouble <= 0.9) income = 3156.;
-                    else if (rndDouble > 0.9) income = 4329.;
-                    else {
-                        throw new RuntimeException("Aborting..." + rndDouble);
+                    String incomeGroupString = (String) person.getAttributes().getAttribute("MiD:hheink_gr2");
+                    String householdSizeString = (String) person.getAttributes().getAttribute("MiD:hhgr_gr");
+                    int incomeGroup = 0;
+                    double householdSize = 1;
+                    if (incomeGroupString != null && householdSizeString != null) {
+                        incomeGroup = Integer.parseInt(incomeGroupString);
+                        householdSize = Double.parseDouble(householdSizeString);
                     }
-                    person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, income);
+                    double income = 0;
+                    switch (incomeGroup) {
+                        case 1:
+                            income = 500 / householdSize;
+                            break;
+                        case 2:
+                            income = (rnd.nextInt(400) + 500) / householdSize;
+                            break;
+                        case 3:
+                            income = (rnd.nextInt(600) + 900) / householdSize;
+                            break;
+                        case 4:
+                            income = (rnd.nextInt(500) + 1500) / householdSize;
+                            break;
+                        case 5:
+                            income = (rnd.nextInt(1000) + 2000) / householdSize;
+                            break;
+                        case 6:
+                            income = (rnd.nextInt(1000) + 3000) / householdSize;
+                            break;
+                        case 7:
+                            income = (rnd.nextInt(1000) + 4000) / householdSize;
+                            break;
+                        case 8:
+                            income = (rnd.nextInt(1000) + 5000) / householdSize;
+                            break;
+                        case 9:
+                            income = (rnd.nextInt(1000) + 6000) / householdSize;
+                            break;
+                        case 10:
+                            income = (Math.abs(rnd.nextGaussian()) * 1000 + 7000) / householdSize;
+                            break;
+                        default:
+                            income = 2364; // Average monthly household income per Capita (2021). See comments below for details
+                            break;
+                        // Average Gross household income: 4734 Euro
+                        // Average household size: 83.1M persons /41.5M households = 2.0 persons / household
+                        // Average household income per capita: 4734/2.0 = 2364 Euro
+                        // Source (Access date: 21 Sep. 2021):
+                        // https://www.destatis.de/EN/Themes/Society-Environment/Income-Consumption-Living-Conditions/Income-Receipts-Expenditure/_node.html
+                        // https://www.destatis.de/EN/Themes/Society-Environment/Population/Households-Families/_node.html
+                        // https://www.destatis.de/EN/Themes/Society-Environment/Population/Current-Population/_node.html;jsessionid=E0D7A060D654B31C3045AAB1E884CA75.live711
+                    }
+                    PersonUtils.setIncome(person, income);
+
                 });
 
         log.info("finished");

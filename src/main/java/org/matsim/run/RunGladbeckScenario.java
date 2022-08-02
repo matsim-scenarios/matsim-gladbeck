@@ -51,7 +51,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         protected void prepareScenario(Scenario scenario) {
             super.prepareScenario(scenario);
             log.info("Adding income attribute to the population");
-            AssignIncome.assignIncomeToPersonSubpopulationAccordingToGermanyAverage(scenario.getPopulation());
+            AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
 
             if (ptFlat) {
                 for (Person p: scenario.getPopulation().getPersons().values()) {
