@@ -1,4 +1,4 @@
-package org.matsim.run.strategy;
+package org.matsim.run.policies;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
