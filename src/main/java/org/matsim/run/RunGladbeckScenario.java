@@ -23,6 +23,7 @@ import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParamete
 import java.util.HashMap;
 import java.util.List;
 
+@CommandLine.Command(header = ":: Gladbeck Scenario ::", version = "v1.0")
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
     private static final Logger log = Logger.getLogger(RunGladbeckScenario.class);
@@ -35,6 +36,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
     static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
+    public RunGladbeckScenario() {
+        super("./scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml");
+    }
+
     public static void main(String args []) {MATSimApplication.run(RunGladbeckScenario.class, args);}
 
         @Override
@@ -42,6 +47,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             var preparedConfig = super.prepareConfig(config);
             log.info("changing config");
             preparedConfig.controler().setLastIteration(5);
+
+            // TODO: create separate config
             preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/network_reduced.xml");
             preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reduced.xml");
             return preparedConfig;

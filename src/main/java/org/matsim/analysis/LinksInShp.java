@@ -41,7 +41,7 @@ public class LinksInShp {
     public static void main(String[] args) {
         String gladbeckShape = "../../shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp";
         List<PreparedGeometry> gladbeckGeoms = ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(gladbeckShape));
-        Network ruhrgebietNetwork = NetworkUtils.readTimeInvariantNetwork("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.network_resolutionHigh-with-pt.xml.gz");
+        Network ruhrgebietNetwork = NetworkUtils.readNetwork("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.network_resolutionHigh-with-pt.xml.gz");
         writeLinksInToNetwork(ruhrgebietNetwork, gladbeckGeoms, "../../shared-svn/projects/GlaMoBi/networkLinksWithinGladbeck.xml.gz");
     }
 

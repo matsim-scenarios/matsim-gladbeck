@@ -29,8 +29,8 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.application.MATSimApplication;
 import org.matsim.application.analysis.DefaultAnalysisMainModeIdentifier;
-import org.matsim.application.analysis.LinkStats;
-import org.matsim.application.analysis.TravelTimeAnalysis;
+import org.matsim.application.analysis.traffic.LinkStats;
+import org.matsim.application.analysis.travelTimeValidation.TravelTimeAnalysis;
 import org.matsim.application.options.SampleOptions;
 import org.matsim.contrib.bicycle.BicycleConfigGroup;
 import org.matsim.contrib.bicycle.Bicycles;
@@ -80,6 +80,10 @@ public class RunMetropoleRuhrScenario extends MATSimApplication {
 
 	@CommandLine.Option(names = "--download-input", defaultValue = "false", description = "Download input files from remote location")
 	private boolean download;
+
+	protected RunMetropoleRuhrScenario(String defaultScenario) {
+		super(defaultScenario);
+	}
 
 	public RunMetropoleRuhrScenario() {
 		super("./scenarios/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0-10pct.config.xml");
