@@ -16,8 +16,8 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.prepare.AssignIncome;
-import org.matsim.run.strategy.PtFlatrate;
-import org.matsim.run.strategy.SchoolRoadsClosure;
+import org.matsim.run.policies.PtFlatrate;
+import org.matsim.run.policies.SchoolRoadsClosure;
 import picocli.CommandLine;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         protected void prepareScenario(Scenario scenario) {
             super.prepareScenario(scenario);
             log.info("Adding income attribute to the population");
-            AssignIncome.assignIncomeToPersonSubpopulationAccordingToGermanyAverage(scenario.getPopulation());
+            AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
 
             if (ptFlat) {
                 for (Person p: scenario.getPopulation().getPersons().values()) {

@@ -16,7 +16,6 @@ import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.prepare.AssignIncome;
 import org.matsim.testcases.MatsimTestUtils;
-import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
 import java.util.List;
 
@@ -100,7 +99,7 @@ public class TestPtFlat {
             var person = factory.createPerson(personId);
             person.addPlan(plan);
             scenario.getPopulation().addPerson(person);
-            AssignIncome.assignIncomeToPersonSubpopulationAccordingToGermanyAverage(scenario.getPopulation());
+            AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
             for (Person p: scenario.getPopulation().getPersons().values()) {
                 Plan planOfAgent = p.getSelectedPlan();
                 List<Leg> legs = TripStructureUtils.getLegs(planOfAgent);
