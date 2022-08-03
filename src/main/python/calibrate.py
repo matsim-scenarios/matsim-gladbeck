@@ -58,11 +58,11 @@ def filter_freight(df):
 
 #print(calibration.calc_mode_share("runs/015", map_trips=filter_freight))
 
-study, obj = calibration.create_mode_share_study("calib", "matsim-metropole-ruhr-1.0-SNAPSHOT.jar",
-                                        "../scenarios/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0-10pct.config.xml",
+study, obj = calibration.create_mode_share_study("calib", "matsim-gladbeck-1.0-SNAPSHOT.jar",
+                                        "../scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml",
                                         modes, target, 
                                         initial_asc=initial,
-                                        args="--10pct",
+                                        args="--25ct",
                                         jvm_args="-Xmx68G -Xmx68G -XX:+AlwaysPreTouch",
                                         person_filter=f, map_trips=filter_freight)
 
