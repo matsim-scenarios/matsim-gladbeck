@@ -13,11 +13,13 @@ import org.matsim.application.MATSimApplication;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.prepare.AssignIncome;
 import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.SchoolRoadsClosure;
+import org.matsim.run.policies.Tempo30Zone;
 import picocli.CommandLine;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 import java.util.HashMap;
@@ -30,8 +32,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
     @CommandLine.Option(names = "--ptFlat", defaultValue = "false", description = "measures to allow car users to have free pt")
     private boolean ptFlat;
 
-    @CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain streets")
+    @CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
     boolean schoolClosure;
+
+    @CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
+    boolean tempo30Zone;
 
     static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
@@ -42,8 +47,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             var preparedConfig = super.prepareConfig(config);
             log.info("changing config");
             preparedConfig.controler().setLastIteration(5);
-            preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/network_reduced.xml");
-            preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reduced.xml");
+            preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/network_reduced.xml.gz");
+            preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reduced.xml.gz");
             return preparedConfig;
         }
 
@@ -52,6 +57,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             super.prepareScenario(scenario);
             log.info("Adding income attribute to the population");
             AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
+            PopulationUtils.writePopulation(scenario.getPopulation(), "/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reducedWithIncome.xml");
 
             if (ptFlat) {
                 for (Person p: scenario.getPopulation().getPersons().values()) {
@@ -65,6 +71,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
                     }
                 }
                 log.info("Number of Agents eligible for pt flat: " + personsEligibleForPtFlat.size());
+            }
+
+            if (tempo30Zone) {
+                Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), null);
             }
 
             if (schoolClosure) {

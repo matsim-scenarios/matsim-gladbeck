@@ -11,6 +11,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -39,17 +40,17 @@ public class TestPtFlat {
         MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--ptFlat=false", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
 
         // load output of both runs
-        var scenarioWithElevation = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        new PopulationReader(scenarioWithElevation).readFile(outputDir + "withPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
+        var scenarioWithPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        new PopulationReader(scenarioWithPtFlat).readFile(outputDir + "withPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
 
-        var scenarioWithoutElevation = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        new PopulationReader(scenarioWithoutElevation).readFile(outputDir + "withoutPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
+        var scenarioWithoutPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        new PopulationReader(scenarioWithoutPtFlat).readFile(outputDir + "withoutPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
 
         // somehow compare the two routes
-        var personWithElevation = scenarioWithElevation.getPopulation().getPersons().get(personId);
-        var personWithoutElevation = scenarioWithoutElevation.getPopulation().getPersons().get(personId);
+        var personWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
+        var personWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
 
-        assertTrue(personWithElevation.getSelectedPlan().getScore() < personWithoutElevation.getSelectedPlan().getScore());
+        assertTrue(personWithPtFlat.getSelectedPlan().getScore() > personWithoutPtFlat.getSelectedPlan().getScore());
 
     }
 
@@ -67,19 +68,12 @@ public class TestPtFlat {
             preparedConfig.controler().setLastIteration(1);
             preparedConfig.controler().setRunId(RUN_ID);
 
-            //adjusting strategy setting of config so agents try out different modes
-            for (StrategyConfigGroup.StrategySettings setting:    preparedConfig.strategy().getStrategySettings()) {
-                if (setting.getStrategyName().equals("ChangeSingleTripMode")) {
-                    setting.setWeight(1.0);
-                }
-            }
-
             return preparedConfig;
         }
 
         @Override
         protected void prepareScenario(Scenario scenario) {
-            //super.prepareScenario(scenario);
+
             // Other agents are not needed for the test
             scenario.getPopulation().getPersons().clear();
             // add single person with two activities
@@ -89,8 +83,8 @@ public class TestPtFlat {
             var home = factory.createActivityFromCoord("home_600.0", homeCoord);
             home.setEndTime(0);
             plan.addActivity(home);
-            var leg = factory.createLeg(TransportMode.car);
-            leg.setMode(TransportMode.car);
+            var leg = factory.createLeg(TransportMode.pt);
+            leg.setMode(TransportMode.pt);
             plan.addLeg(leg);
             var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("7339832750094r")).getCoord();
             var other = factory.createActivityFromCoord("other_3600.0",otherCoord);
@@ -98,21 +92,18 @@ public class TestPtFlat {
             plan.addActivity(other);
             var person = factory.createPerson(personId);
             person.addPlan(plan);
+            person.getAttributes().putAttribute("subpopulation", "person");
             scenario.getPopulation().addPerson(person);
+
             AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
+
             for (Person p: scenario.getPopulation().getPersons().values()) {
-                Plan planOfAgent = p.getSelectedPlan();
-                List<Leg> legs = TripStructureUtils.getLegs(planOfAgent);
-                //only car users are allowed to enjoy the pt flatrate
-                for (Leg leg1: legs) {
-                    if (leg1.getMode().equals(TransportMode.car)) {
-                        personsEligibleForPtFlat.put(p.getId(),0);
-                    }
-                }
-                //p.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 100.0);
+                personsEligibleForPtFlat.put(p.getId(),0);
             }
 
             super.prepareScenario(scenario);
+
+            PopulationUtils.writePopulation(scenario.getPopulation(), "/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reducedWithIncome.xml");
         }
 
         @Override
