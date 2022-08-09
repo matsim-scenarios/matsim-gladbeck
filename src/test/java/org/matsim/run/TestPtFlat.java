@@ -2,25 +2,18 @@ package org.matsim.run;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.matsim.api.core.v01.*;
-import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
 import org.matsim.application.MATSimApplication;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
-import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.prepare.AssignIncome;
 import org.matsim.testcases.MatsimTestUtils;
-
-import java.util.List;
-
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestPtFlat {
@@ -65,30 +58,28 @@ public class TestPtFlat {
             preparedConfig.qsim().setNumberOfThreads(1);
             preparedConfig.plans().setInputFile(null);
             //need multiple iteration for modeChoice
-            preparedConfig.controler().setLastIteration(1);
+            preparedConfig.controler().setLastIteration(0);
             preparedConfig.controler().setRunId(RUN_ID);
-
             return preparedConfig;
         }
 
         @Override
         protected void prepareScenario(Scenario scenario) {
-
             // Other agents are not needed for the test
             scenario.getPopulation().getPersons().clear();
             // add single person with two activities
             var factory = scenario.getPopulation().getFactory();
             var plan = factory.createPlan();
-            var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("431735990000f")).getCoord();
+            var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("242353520009f")).getCoord();
             var home = factory.createActivityFromCoord("home_600.0", homeCoord);
-            home.setEndTime(0);
+            home.setEndTime(50400);
             plan.addActivity(home);
             var leg = factory.createLeg(TransportMode.pt);
             leg.setMode(TransportMode.pt);
             plan.addLeg(leg);
-            var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("7339832750094r")).getCoord();
+            var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("3953616600000f")).getCoord();
             var other = factory.createActivityFromCoord("other_3600.0",otherCoord);
-            other.setEndTime(3600);
+            other.setEndTime(54000);
             plan.addActivity(other);
             var person = factory.createPerson(personId);
             person.addPlan(plan);
@@ -100,10 +91,8 @@ public class TestPtFlat {
             for (Person p: scenario.getPopulation().getPersons().values()) {
                 personsEligibleForPtFlat.put(p.getId(),0);
             }
-
             super.prepareScenario(scenario);
 
-            PopulationUtils.writePopulation(scenario.getPopulation(), "/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reducedWithIncome.xml");
         }
 
         @Override

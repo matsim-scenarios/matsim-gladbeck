@@ -15,10 +15,12 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
+import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignIncome;
 import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.run.policies.Tempo30Zone;
+import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 import java.util.HashMap;
@@ -41,7 +43,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
     static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
     public RunGladbeckScenario() {
-        super("./scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml");
+        //super("./scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml");
+        super("./scenarios/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0-10pct.config.xml");
     }
 
     public static void main(String args []) {MATSimApplication.run(RunGladbeckScenario.class, args);}
@@ -50,11 +53,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         public Config prepareConfig(Config config) {
             var preparedConfig = super.prepareConfig(config);
             log.info("changing config");
-            preparedConfig.controler().setLastIteration(5);
-
+            preparedConfig.controler().setLastIteration(1);
             // TODO: create separate config
-            preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/network_reduced.xml");
-            preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reduced.xml");
+            preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/network_reduced.xml.gz");
+            preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reduced.xml.gz");
             return preparedConfig;
         }
 
@@ -79,7 +81,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             }
 
             if (tempo30Zone) {
-                Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), null);
+
+                Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource("/Users/gregorr/Desktop/Test_ScenarioCutOut/test.shp")));
             }
 
             if (schoolClosure) {

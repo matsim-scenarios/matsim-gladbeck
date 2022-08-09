@@ -1,5 +1,4 @@
 package org.matsim.prepare;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.matsim.api.core.v01.Coord;
