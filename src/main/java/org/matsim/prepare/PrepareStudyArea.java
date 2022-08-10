@@ -14,7 +14,7 @@ import java.util.*;
 public class PrepareStudyArea {
 
     private static final Path studyAreaShp =
-            Paths.get("/Users/gregorr/Documents/work/respos/shared-svn/projects/GlaMoBi/data/shp-files/shapeFilesUntersuchungsgebiet/dvg2krs_gladbeck-bottrop-gelsenkirchen/merged.shp");
+            Paths.get("../../shared-svn/projects/GlaMoBi/data/shp-files/shapeFilesUntersuchungsgebiet/dvg2krs_gladbeck-bottrop-gelsenkirchen/merged.shp");
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(PrepareStudyArea.class);
 
     public static void main (String[] args) {
@@ -60,7 +60,7 @@ public class PrepareStudyArea {
             SimpleFeature featureToWriteOut = featureFactory.createPolygon(coordinates, attributeValues, Integer.toString(1));
             featuresToWriteOut.add(featureToWriteOut);
 
-            ShapeFileWriter.writeGeometries(featuresToWriteOut, "/Users/gregorr/Desktop/Test_ScenarioCutOut/test.shp");
+            ShapeFileWriter.writeGeometries(featuresToWriteOut, "../../shared-svn/projects/GlaMoBi/data/shp-files/shapeFilesUntersuchungsgebiet/dvg2krs_gladbeck-bottrop-gelsenkirchen/study-area.shp");
             log.info("Writing shape file... Done.");
 
         }
