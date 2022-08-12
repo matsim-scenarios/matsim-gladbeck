@@ -47,7 +47,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         super("./scenarios/metropole-ruhr-v1.0/input/gladbeck-v1.0-25pct.config.xml");
     }
 
-    public static void main(String args []) {MATSimApplication.run(RunGladbeckScenario.class, args);}
+    public static void main(String[] args) {MATSimApplication.run(RunGladbeckScenario.class, args);}
 
         @Override
         public Config prepareConfig(Config config) {
