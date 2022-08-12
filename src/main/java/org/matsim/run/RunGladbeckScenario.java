@@ -55,8 +55,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             log.info("changing config");
             preparedConfig.controler().setLastIteration(1);
             // TODO: create separate config
-            preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/network_reduced.xml.gz");
-            preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test_ScenarioCutOut/population_reduced.xml.gz");
+            preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test/GlaMoBi/reduced_metropole-ruhr-v1.0.network_resolutionHigh-with-pt-with-bike.xml.gz");
+            preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test/GlaMoBi/reduced_metropole-ruhr-v1.1-25pct.plans.xml.gz");
             return preparedConfig;
         }
 
@@ -81,7 +81,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             }
 
             if (tempo30Zone) {
-
                 Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource("/Users/gregorr/Desktop/Test_ScenarioCutOut/test.shp")));
             }
 

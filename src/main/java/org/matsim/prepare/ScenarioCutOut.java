@@ -84,7 +84,7 @@ public class ScenarioCutOut implements MATSimAppCommand {
     @CommandLine.Option(names = "--keep-links-in-routes", description = "Keep all links in routes relevant to the area", defaultValue = "false")
     private boolean keepLinksInRoutes;
 
-    @CommandLine.Option(names = "--use-router", description = "Use router on legs that don't have a route", defaultValue = "false")
+            @CommandLine.Option(names = "--use-router", description = "Use router on legs that don't have a route", defaultValue = "false")
     private boolean useRouter;
 
     @CommandLine.Mixin
