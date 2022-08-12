@@ -24,7 +24,7 @@
 	</module>
 	<module name="plans">
 		<param name="inputPlansFile"
-			   value="metropole-ruhr-v1.1-10pct.plans.xml.gz"/>
+			   value="/Users/gregorr/Documents/work/respos/shared-svn/projects/matsim-metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.1-10pct.plans.xml.gz"/>
 		<param name="removingUnnecessaryPlanAttributes" value="false"/>
 	</module>
 	<module name="vehicles">

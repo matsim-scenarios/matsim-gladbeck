@@ -44,7 +44,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
     public RunGladbeckScenario() {
         //super("./scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml");
-        super("./scenarios/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0-10pct.config.xml");
+        super("./scenarios/metropole-ruhr-v1.0/input/gladbeck-v1.0-25pct.config.xml");
     }
 
     public static void main(String args []) {MATSimApplication.run(RunGladbeckScenario.class, args);}
@@ -53,7 +53,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         public Config prepareConfig(Config config) {
             var preparedConfig = super.prepareConfig(config);
             log.info("changing config");
-            preparedConfig.controler().setLastIteration(1);
+            preparedConfig.controler().setLastIteration(0);
             // TODO: create separate config
             preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test/GlaMoBi/reduced_metropole-ruhr-v1.0.network_resolutionHigh-with-pt-with-bike.xml.gz");
             preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test/GlaMoBi/reduced_metropole-ruhr-v1.1-25pct.plans.xml.gz");

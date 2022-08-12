@@ -86,7 +86,7 @@ public class RunMetropoleRuhrScenario extends MATSimApplication {
 	}
 
 	public RunMetropoleRuhrScenario() {
-		super("./scenarios/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0-10pct.config.xml");
+		super("./scenarios/metropole-ruhr-v1.0/input/gladbeck-v1.0-25pct.config.xml");
 	}
 
 	/**
