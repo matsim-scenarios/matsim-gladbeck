@@ -53,7 +53,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         public Config prepareConfig(Config config) {
             var preparedConfig = super.prepareConfig(config);
             log.info("changing config");
-            preparedConfig.controler().setLastIteration(0);
+            preparedConfig.controler().setLastIteration(1);
             // TODO: create separate config
             //preparedConfig.network().setInputFile("/Users/gregorr/Desktop/Test/GlaMoBi/reduced_metropole-ruhr-v1.0.network_resolutionHigh-with-pt-with-bike.xml.gz");
             //preparedConfig.plans().setInputFile("/Users/gregorr/Desktop/Test/GlaMoBi/reduced_metropole-ruhr-v1.1-25pct.plans.xml.gz");
@@ -63,8 +63,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         @Override
         protected void prepareScenario(Scenario scenario) {
             super.prepareScenario(scenario);
-            log.info("Adding income attribute to the population");
-            AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
+            
 
             if (ptFlat) {
                 for (Person p: scenario.getPopulation().getPersons().values()) {

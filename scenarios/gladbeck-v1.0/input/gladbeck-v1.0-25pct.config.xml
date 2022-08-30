@@ -33,10 +33,10 @@
 	</module>
 	<module name="transit">
 		<param name="transitScheduleFile"
-			   value="../../../../../shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.1-transitSchedule.xml.gz"/>
+			   value="../../../../../shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.0-transitSchedule.xml.gz"/>
 		<param name="useTransit" value="true"/>
 		<param name="vehiclesFile"
-			   value="../../../../..//shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.1-transitVehicles.xml.gz"/>
+			   value="../../../../..//shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.0-transitVehicles.xml.gz"/>
 	</module>
 	<module name="planscalcroute">
 		<param name="networkModes" value="car,ride,bike"/>
