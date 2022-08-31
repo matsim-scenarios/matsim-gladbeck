@@ -54,7 +54,9 @@ import org.matsim.core.utils.geometry.geotools.MGC;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -84,7 +86,7 @@ public class ScenarioCutOut implements MATSimAppCommand {
     @CommandLine.Option(names = "--keep-links-in-routes", description = "Keep all links in routes relevant to the area", defaultValue = "false")
     private boolean keepLinksInRoutes;
 
-            @CommandLine.Option(names = "--use-router", description = "Use router on legs that don't have a route", defaultValue = "false")
+    @CommandLine.Option(names = "--use-router", description = "Use router on legs that don't have a route", defaultValue = "false")
     private boolean useRouter;
 
     @CommandLine.Mixin
@@ -146,12 +148,15 @@ public class ScenarioCutOut implements MATSimAppCommand {
 
             boolean keepPerson = false;
 
-            for (Trip trip : TripStructureUtils.getTrips(person.getSelectedPlan())) {
+            List<Trip> trips = TripStructureUtils.getTrips(person.getSelectedPlan());
+
+            List<Id<Link>> linkIds = new ArrayList<>();
+
+            for (Trip trip : trips) {
 
                 // keep all agents starting or ending in area
                 if (geom.contains(MGC.coord2Point(trip.getOriginActivity().getCoord())) || geom.contains(MGC.coord2Point(trip.getDestinationActivity().getCoord()))) {
                     keepPerson = true;
-                    break;
                 }
 
                 LineString line = gf.createLineString(new Coordinate[]{
@@ -162,7 +167,6 @@ public class ScenarioCutOut implements MATSimAppCommand {
                 // also keep persons traveling through or close to area (beeline)
                 if (line.intersects(geom)) {
                     keepPerson = true;
-                    break;
                 }
 
 
@@ -171,7 +175,7 @@ public class ScenarioCutOut implements MATSimAppCommand {
                     if (keepLinksInRoutes && route instanceof NetworkRoute) {
 
                         if (((NetworkRoute) route).getLinkIds().stream().anyMatch(linksToKeep::contains)) {
-                            linksToInclude.addAll(((NetworkRoute) route).getLinkIds());
+                            linkIds.addAll(((NetworkRoute) route).getLinkIds());
                             keepPerson = true;
                         }
 
@@ -203,18 +207,30 @@ public class ScenarioCutOut implements MATSimAppCommand {
 
                         // add all these links directly
                         path.links.stream().map(Link::getId)
-                                .forEach(linksToInclude::add);
+                                .forEach(linkIds::add);
 
                         keepPerson = true;
                     }
                 }
+
+                if (trip.getOriginActivity().getLinkId() != null)
+                    linkIds.add(trip.getOriginActivity().getLinkId());
+
+                if (trip.getDestinationActivity().getLinkId() != null)
+                    linkIds.add(trip.getDestinationActivity().getLinkId());
+
+            }
+
+            if (keepPerson) {
+                linksToInclude.addAll(linkIds);
+
+            } else {
+
+                personsToDelete.add(person.getId());
             }
 
             PopulationUtils.resetRoutes(person.getSelectedPlan());
 
-            if (!keepPerson) {
-                personsToDelete.add(person.getId());
-            }
         });
 
         log.info("Persons to delete: " + personsToDelete.size());
