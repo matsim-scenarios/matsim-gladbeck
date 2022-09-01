@@ -56,7 +56,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected void prepareScenario(Scenario scenario) {
 		super.prepareScenario(scenario);
 
-
 		if (ptFlat) {
 			for (Person p : scenario.getPopulation().getPersons().values()) {
 				Plan plan = p.getSelectedPlan();

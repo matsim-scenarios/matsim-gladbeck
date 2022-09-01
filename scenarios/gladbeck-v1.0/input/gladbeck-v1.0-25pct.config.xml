@@ -7,8 +7,8 @@
 	<module name="controler">
 		<param name="lastIteration" value="400"/>
 		<param name="overwriteFiles" value="deleteDirectoryIfExists"/>
-		<param name="runId" value="gladbeck-v1.0-10pct"/>
-		<param name="outputDirectory" value="./scenarios/output/output_gladbeck-v1.0-10pct/"/>
+		<param name="runId" value="gladbeck-v1.0-25pct"/>
+		<param name="outputDirectory" value="./scenarios/output/output_gladbeck-v1.0-25pct/"/>
 		<param name="writeEventsInterval" value="100"/>
 		<param name="writePlansInterval" value="100"/>
 		<param name="routingAlgorithmType" value="SpeedyALT"/>
