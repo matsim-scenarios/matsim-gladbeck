@@ -38,7 +38,6 @@ initial = {
     "ride": -4.12
 }
 
-# Use adjusted modal split for our distance distribution
 target = {
     "walk":  0.21,
     "bike":  0.1,
@@ -59,7 +58,7 @@ def filter_freight(df):
 #print(calibration.calc_mode_share("runs/015", map_trips=filter_freight))
 
 study, obj = calibration.create_mode_share_study("calib", "matsim-gladbeck-1.0-SNAPSHOT.jar",
-                                        "../scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml",
+                                        "../input/gladbeck-v1.0-25pct.config.xml",
                                         modes, target, 
                                         initial_asc=initial,
                                         args="--25ct",
