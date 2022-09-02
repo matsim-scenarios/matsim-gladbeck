@@ -10,13 +10,14 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.application.MATSimApplication;
-import org.matsim.core.config.Config;
+import org.matsim.application.prepare.population.FixSubtourModes;
+import org.matsim.application.prepare.population.XYToLinks;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.prepare.AssignIncome;
+import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.run.policies.Tempo30Zone;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = "v1.0")
+@MATSimApplication.Prepare({ScenarioCutOut.class, FixSubtourModes.class, XYToLinks.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	private static final Logger log = Logger.getLogger(RunGladbeckScenario.class);
