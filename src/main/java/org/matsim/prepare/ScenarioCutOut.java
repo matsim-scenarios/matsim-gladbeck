@@ -54,255 +54,256 @@ import org.matsim.core.utils.geometry.geotools.MGC;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @CommandLine.Command(name = "scenario-cutout", description = "TODO")
 public class ScenarioCutOut implements MATSimAppCommand {
 
-    private static final Logger log = LogManager.getLogger(ScenarioCutOut.class);
+	private static final Logger log = LogManager.getLogger(ScenarioCutOut.class);
 
-    @CommandLine.Option(names = "--input", description = "Path to input population", required = true)
-    private Path input;
+	@CommandLine.Option(names = "--input", description = "Path to input population", required = true)
+	private Path input;
 
-    @CommandLine.Option(names = "--network", description = "Path to network", required = true)
-    private Path networkPath;
+	@CommandLine.Option(names = "--network", description = "Path to network", required = true)
+	private Path networkPath;
 
-    @CommandLine.Option(names = "--buffer", description = "Buffer around zones in meter", defaultValue = "1000")
-    private double buffer;
+	@CommandLine.Option(names = "--buffer", description = "Buffer around zones in meter", defaultValue = "1000")
+	private double buffer;
 
-    @CommandLine.Option(names = "--output-network", description = "Path to output network", required = true)
-    private Path outputNetwork;
+	@CommandLine.Option(names = "--output-network", description = "Path to output network", required = true)
+	private Path outputNetwork;
 
-    @CommandLine.Option(names = "--output-population", description = "Path to output population", required = true)
-    private Path outputPopulation;
+	@CommandLine.Option(names = "--output-population", description = "Path to output population", required = true)
+	private Path outputPopulation;
 
-    @CommandLine.Option(names = "--modes", description = "Modes to consider when cutting network", defaultValue = "car,bike,ride", split = ",")
-    private Set<String> modes;
+	@CommandLine.Option(names = "--modes", description = "Modes to consider when cutting network", defaultValue = "car,bike,ride", split = ",")
+	private Set<String> modes;
 
-    @CommandLine.Option(names = "--keep-links-in-routes", description = "Keep all links in routes relevant to the area", defaultValue = "false")
-    private boolean keepLinksInRoutes;
+	@CommandLine.Option(names = "--keep-links-in-routes", description = "Keep all links in routes relevant to the area", defaultValue = "false")
+	private boolean keepLinksInRoutes;
 
-    @CommandLine.Option(names = "--use-router", description = "Use router on legs that don't have a route", defaultValue = "false")
-    private boolean useRouter;
+	@CommandLine.Option(names = "--use-router", description = "Use router on legs that don't have a route", defaultValue = "false")
+	private boolean useRouter;
 
-    @CommandLine.Mixin
-    private CrsOptions crs;
+	@CommandLine.Mixin
+	private CrsOptions crs;
 
-    @CommandLine.Mixin
-    private ShpOptions shp;
+	@CommandLine.Mixin
+	private ShpOptions shp;
 
-    private final ThreadLocal<LeastCostPathCalculator> routerCache = new ThreadLocal<>();
+	private final ThreadLocal<LeastCostPathCalculator> routerCache = new ThreadLocal<>();
 
-    public static void main(String[] args) {
-        new ScenarioCutOut().execute(args);
-    }
+	public static void main(String[] args) {
+		new ScenarioCutOut().execute(args);
+	}
 
-    @Override
-    public Integer call() throws Exception {
+	@Override
+	public Integer call() throws Exception {
 
-        Network network = NetworkUtils.readNetwork(networkPath.toString());
-        Population population = PopulationUtils.readPopulation(input.toString());
+		Network network = NetworkUtils.readNetwork(networkPath.toString());
+		Population population = PopulationUtils.readPopulation(input.toString());
 
-        if (crs.getInputCRS() == null) {
-            log.error("Input CRS must be specified");
-            return 2;
-        }
+		if (crs.getInputCRS() == null) {
+			log.error("Input CRS must be specified");
+			return 2;
+		}
 
-        Geometry geom = shp.getGeometry().buffer(buffer);
+		Geometry geom = shp.getGeometry().buffer(buffer);
 
-        Set<Id<Link>> linksToDelete = new HashSet<>();
-        Set<Id<Link>> linksToKeep = new HashSet<>();
+		Set<Id<Link>> linksToDelete = new HashSet<>();
+		Set<Id<Link>> linksToKeep = new HashSet<>();
 
-        for (Link link : network.getLinks().values()) {
+		for (Link link : network.getLinks().values()) {
 
-            if (geom.contains(MGC.coord2Point(link.getCoord()))
-                    || geom.contains(MGC.coord2Point(link.getFromNode().getCoord()))
-                    || geom.contains(MGC.coord2Point(link.getToNode().getCoord()))
-                    || link.getAllowedModes().contains(TransportMode.pt)) {
-                // keep the link
-                linksToKeep.add(link.getId());
-            } else {
-                linksToDelete.add(link.getId());
-            }
-        }
+			if (geom.contains(MGC.coord2Point(link.getCoord()))
+					|| geom.contains(MGC.coord2Point(link.getFromNode().getCoord()))
+					|| geom.contains(MGC.coord2Point(link.getToNode().getCoord()))
+					|| link.getAllowedModes().contains(TransportMode.pt)) {
+				// keep the link
+				linksToKeep.add(link.getId());
+			} else {
+				linksToDelete.add(link.getId());
+			}
+		}
 
 
-        // additional links to include
-        Set<Id<Link>> linksToInclude = ConcurrentHashMap.newKeySet();
+		// additional links to include
+		Set<Id<Link>> linksToInclude = ConcurrentHashMap.newKeySet();
 
-        GeometryFactory gf = new GeometryFactory();
+		GeometryFactory gf = new GeometryFactory();
 
-        Network carOnlyNetwork = useRouter ? filterNetwork(network) : null;
-        if (useRouter) {
-            keepLinksInRoutes = true;
-        }
+		Network carOnlyNetwork = useRouter ? filterNetwork(network) : null;
+		if (useRouter) {
+			keepLinksInRoutes = true;
+		}
 
-        // now delete irrelevant persons
-        Set<Id<Person>> personsToDelete = ConcurrentHashMap.newKeySet();
+		// now delete irrelevant persons
+		Set<Id<Person>> personsToDelete = ConcurrentHashMap.newKeySet();
 
-        ParallelPersonAlgorithmUtils.run(population, Runtime.getRuntime().availableProcessors(), person -> {
+		ParallelPersonAlgorithmUtils.run(population, Runtime.getRuntime().availableProcessors(), person -> {
 
-            boolean keepPerson = false;
+			boolean keepPerson = false;
 
-            List<Trip> trips = TripStructureUtils.getTrips(person.getSelectedPlan());
+			List<Trip> trips = TripStructureUtils.getTrips(person.getSelectedPlan());
 
-            List<Id<Link>> linkIds = new ArrayList<>();
+			Set<Id<Link>> linkIds = new HashSet<>();
 
-            for (Trip trip : trips) {
+			for (Trip trip : trips) {
 
-                // keep all agents starting or ending in area
-                if (geom.contains(MGC.coord2Point(trip.getOriginActivity().getCoord())) || geom.contains(MGC.coord2Point(trip.getDestinationActivity().getCoord()))) {
-                    keepPerson = true;
-                }
+				// keep all agents starting or ending in area
+				if (geom.contains(MGC.coord2Point(trip.getOriginActivity().getCoord())) || geom.contains(MGC.coord2Point(trip.getDestinationActivity().getCoord()))) {
+					keepPerson = true;
+				}
 
-                LineString line = gf.createLineString(new Coordinate[]{
-                        MGC.coord2Coordinate(trip.getOriginActivity().getCoord()),
-                        MGC.coord2Coordinate(trip.getDestinationActivity().getCoord())
-                });
+				LineString line = gf.createLineString(new Coordinate[]{
+						MGC.coord2Coordinate(trip.getOriginActivity().getCoord()),
+						MGC.coord2Coordinate(trip.getDestinationActivity().getCoord())
+				});
 
-                // also keep persons traveling through or close to area (beeline)
-                if (line.intersects(geom)) {
-                    keepPerson = true;
-                }
+				// also keep persons traveling through or close to area (beeline)
+				if (line.intersects(geom)) {
+					keepPerson = true;
+				}
 
 
-                for (Leg leg : trip.getLegsOnly()) {
-                    Route route = leg.getRoute();
-                    if (keepLinksInRoutes && route instanceof NetworkRoute) {
+				for (Leg leg : trip.getLegsOnly()) {
+					Route route = leg.getRoute();
+					if (keepLinksInRoutes && route instanceof NetworkRoute) {
 
-                        if (((NetworkRoute) route).getLinkIds().stream().anyMatch(linksToKeep::contains)) {
-                            linkIds.addAll(((NetworkRoute) route).getLinkIds());
-                            keepPerson = true;
-                        }
+						linkIds.addAll(((NetworkRoute) route).getLinkIds());
+						if (((NetworkRoute) route).getLinkIds().stream().anyMatch(linksToKeep::contains)) {
+							keepPerson = true;
+						}
+					}
+				}
 
-                    }
-                }
+				if (useRouter) {
 
-                if (useRouter) {
+					LeastCostPathCalculator router = createRouter(carOnlyNetwork);
 
-                    LeastCostPathCalculator router = createRouter(carOnlyNetwork);
+					Node fromNode;
+					Node toNode;
 
-                    Node fromNode;
-                    Node toNode;
+					Map<Id<Link>, ? extends Link> carLinks = carOnlyNetwork.getLinks();
 
-                    if (trip.getOriginActivity().getLinkId() != null) {
-                        fromNode = carOnlyNetwork.getLinks().get(trip.getOriginActivity().getLinkId()).getFromNode();
-                    } else {
-                        fromNode = NetworkUtils.getNearestLink(carOnlyNetwork, trip.getOriginActivity().getCoord()).getFromNode();
-                    }
+					if (trip.getOriginActivity().getLinkId() != null && carLinks.get(trip.getOriginActivity().getLinkId()) != null) {
+						fromNode = carLinks.get(trip.getOriginActivity().getLinkId()).getFromNode();
+					} else {
+						fromNode = NetworkUtils.getNearestLink(carOnlyNetwork, trip.getOriginActivity().getCoord()).getFromNode();
+					}
 
-                    if (trip.getDestinationActivity().getLinkId() != null) {
-                        toNode = carOnlyNetwork.getLinks().get(trip.getDestinationActivity().getLinkId()).getFromNode();
-                    } else {
-                        toNode = NetworkUtils.getNearestLink(carOnlyNetwork, trip.getDestinationActivity().getCoord()).getFromNode();
-                    }
+					if (trip.getDestinationActivity().getLinkId() != null && carLinks.get(trip.getDestinationActivity().getLinkId()) != null) {
+						toNode = carLinks.get(trip.getDestinationActivity().getLinkId()).getFromNode();
+					} else {
+						toNode = NetworkUtils.getNearestLink(carOnlyNetwork, trip.getDestinationActivity().getCoord()).getFromNode();
+					}
 
-                    LeastCostPathCalculator.Path path = router.calcLeastCostPath(fromNode, toNode, 0, null, null);
+					LeastCostPathCalculator.Path path = router.calcLeastCostPath(fromNode, toNode, 0, null, null);
 
-                    if (path != null && path.links.stream().map(Link::getId).anyMatch(linksToKeep::contains)) {
+					if (path != null) {
+						// add all these links directly
+						path.links.stream().map(Link::getId).forEach(linkIds::add);
+						if (path.links.stream().map(Link::getId).anyMatch(linksToKeep::contains)) {
+							keepPerson = true;
+						}
+					}
+				}
 
-                        // add all these links directly
-                        path.links.stream().map(Link::getId)
-                                .forEach(linkIds::add);
+				// activity link ids are reset, because it is not guaranteed they can be retained
+				if (trip.getOriginActivity().getLinkId() != null) {
+					linkIds.add(trip.getOriginActivity().getLinkId());
+					trip.getOriginActivity().setLinkId(null);
+				}
 
-                        keepPerson = true;
-                    }
-                }
+				if (trip.getDestinationActivity().getLinkId() != null) {
+					linkIds.add(trip.getDestinationActivity().getLinkId());
+					trip.getDestinationActivity().setLinkId(null);
+				}
 
-                if (trip.getOriginActivity().getLinkId() != null)
-                    linkIds.add(trip.getOriginActivity().getLinkId());
+			}
 
-                if (trip.getDestinationActivity().getLinkId() != null)
-                    linkIds.add(trip.getDestinationActivity().getLinkId());
+			if (keepPerson) {
+				linksToInclude.addAll(linkIds);
+			} else {
+				personsToDelete.add(person.getId());
+			}
 
-            }
+			PopulationUtils.resetRoutes(person.getSelectedPlan());
 
-            if (keepPerson) {
-                linksToInclude.addAll(linkIds);
+		});
 
-            } else {
+		log.info("Persons to delete: " + personsToDelete.size());
+		for (Id<Person> personId : personsToDelete) {
+			population.removePerson(personId);
+		}
 
-                personsToDelete.add(person.getId());
-            }
+		PopulationUtils.writePopulation(population, outputPopulation.toString());
 
-            PopulationUtils.resetRoutes(person.getSelectedPlan());
+		if (keepLinksInRoutes && linksToInclude.isEmpty()) {
+			log.warn("Keep links in routes is activated, but no links have been kept. Probably no routes are present.");
+		}
 
-        });
+		log.info("Links to add: " + linksToKeep.size());
 
-        log.info("Persons to delete: " + personsToDelete.size());
-        for (Id<Person> personId : personsToDelete) {
-            population.removePerson(personId);
-        }
+		if (keepLinksInRoutes) {
+			log.info("Additional links from routes to include: {}", linksToInclude.size());
+		}
 
-        PopulationUtils.writePopulation(population, outputPopulation.toString());
 
-        if (keepLinksInRoutes && linksToInclude.isEmpty()) {
-            log.warn("Keep links in routes is activated, but no links have been kept. Probably no routes are present.");
-        }
+		log.info("number of links in original network: {}", network.getLinks().size());
 
-        log.info("Links to add: " + linksToKeep.size());
+		for (Id<Link> linkId : linksToDelete) {
+			if (!linksToInclude.contains(linkId))
+				network.removeLink(linkId);
+		}
 
-        if (keepLinksInRoutes) {
-            log.info("Additional links from routes to include: {}", linksToInclude.size());
-        }
+		// clean the network
+		log.info("number of links before cleaning: {}", network.getLinks().size());
+		log.info("number of nodes before cleaning: {}", network.getNodes().size());
 
+		MultimodalNetworkCleaner cleaner = new MultimodalNetworkCleaner(network);
+		cleaner.removeNodesWithoutLinks();
 
-        log.info("number of links in original network: {}", network.getLinks().size());
+		for (String m : modes) {
+			log.info("Cleaning mode {}", m);
+			cleaner.run(Set.of(m));
+		}
 
-        for (Id<Link> linkId : linksToDelete) {
-            if (!linksToInclude.contains(linkId))
-                network.removeLink(linkId);
-        }
+		log.info("number of links after cleaning: {}", network.getLinks().size());
+		log.info("number of nodes after cleaning: {}", network.getNodes().size());
 
-        // clean the network
-        log.info("number of links before cleaning: {}", network.getLinks().size());
-        log.info("number of nodes before cleaning: {}", network.getNodes().size());
+		NetworkUtils.writeNetwork(network, outputNetwork.toString());
 
-        MultimodalNetworkCleaner cleaner = new MultimodalNetworkCleaner(network);
-        cleaner.removeNodesWithoutLinks();
 
-        for (String m : modes) {
-            log.info("Cleaning mode {}", m);
-            cleaner.run(Set.of(m));
-        }
+		return 0;
+	}
 
-        log.info("number of links after cleaning: {}", network.getLinks().size());
-        log.info("number of nodes after cleaning: {}", network.getNodes().size());
+	private Network filterNetwork(Network network) {
+		TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
 
-        NetworkUtils.writeNetwork(network, outputNetwork.toString());
+		Network carOnlyNetwork = NetworkUtils.createNetwork();
+		filter.filter(carOnlyNetwork, Set.of(TransportMode.car));
+		return carOnlyNetwork;
+	}
 
+	private LeastCostPathCalculator createRouter(Network network) {
 
-        return 0;
-    }
+		LeastCostPathCalculator c = routerCache.get();
+		if (c == null) {
+			FreeSpeedTravelTime travelTime = new FreeSpeedTravelTime();
+			LeastCostPathCalculatorFactory fastAStarLandmarksFactory = new SpeedyALTFactory();
 
-    private Network filterNetwork(Network network) {
-        TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
+			OnlyTimeDependentTravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutility(travelTime);
 
-        Network carOnlyNetwork = NetworkUtils.createNetwork();
-        filter.filter(carOnlyNetwork, Set.of(TransportMode.car));
-        return carOnlyNetwork;
-    }
+			c = fastAStarLandmarksFactory.createPathCalculator(network, travelDisutility, travelTime);
+			routerCache.set(c);
+		}
 
-    private LeastCostPathCalculator createRouter(Network network) {
-
-        LeastCostPathCalculator c = routerCache.get();
-        if (c == null) {
-            FreeSpeedTravelTime travelTime = new FreeSpeedTravelTime();
-            LeastCostPathCalculatorFactory fastAStarLandmarksFactory = new SpeedyALTFactory();
-
-            OnlyTimeDependentTravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutility(travelTime);
-
-            c = fastAStarLandmarksFactory.createPathCalculator(network, travelDisutility, travelTime);
-            routerCache.set(c);
-        }
-
-        return c;
-    }
+		return c;
+	}
 }
+
 
 
 
