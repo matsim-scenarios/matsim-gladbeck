@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiLineString;
@@ -34,7 +35,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class ShpToNetwork {
 
-	private static final Logger logger = Logger.getLogger(ShpToNetwork.class);
+	private static final Logger logger = LogManager.getLogger(ShpToNetwork.class);
 	private final double maxSearchRadius = 2.;
 
     public static void main (String[] args) {

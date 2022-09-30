@@ -20,7 +20,8 @@
 package org.matsim.analysis;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -36,7 +37,7 @@ import java.util.Set;
 
 public class LinksInShp {
 
-    private static final Logger log = Logger.getLogger(LinksInShp.class);
+    private static final Logger log = LogManager.getLogger(LinksInShp.class);
 
     public static void main(String[] args) {
         String gladbeckShape = "../../shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp";

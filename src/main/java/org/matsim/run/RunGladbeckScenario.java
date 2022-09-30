@@ -1,7 +1,8 @@
 package org.matsim.run;
 
 import com.google.inject.Singleton;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -10,6 +11,7 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.application.MATSimApplication;
+import org.matsim.application.prepare.population.DownSamplePopulation;
 import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
 import org.matsim.core.controler.AbstractModule;
@@ -29,10 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = "v1.0")
-@MATSimApplication.Prepare({ScenarioCutOut.class, FixSubtourModes.class, XYToLinks.class})
+@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
-	private static final Logger log = Logger.getLogger(RunGladbeckScenario.class);
+	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
 	@CommandLine.Option(names = "--ptFlat", defaultValue = "false", description = "measures to allow car users to have free pt")
 	private boolean ptFlat;

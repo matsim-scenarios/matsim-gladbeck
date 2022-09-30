@@ -1,4 +1,6 @@
 package org.matsim.prepare;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.matsim.api.core.v01.Coord;
@@ -15,7 +17,7 @@ public class PrepareStudyArea {
 
     private static final Path studyAreaShp =
             Paths.get("../../shared-svn/projects/GlaMoBi/data/shp-files/shapeFilesUntersuchungsgebiet/dvg2krs_gladbeck-bottrop-gelsenkirchen/merged.shp");
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(PrepareStudyArea.class);
+    private static final Logger log = LogManager.getLogger(PrepareStudyArea.class);
 
     public static void main (String[] args) {
 

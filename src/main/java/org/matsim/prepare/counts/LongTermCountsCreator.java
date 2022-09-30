@@ -43,7 +43,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.matsim.api.core.v01.Id;
@@ -66,7 +67,7 @@ import org.matsim.counts.Volume;
  */
 public class LongTermCountsCreator {
 
-	private static final Logger log = Logger.getLogger(LongTermCountsCreator.class);
+	private static final Logger log = LogManager.getLogger(LongTermCountsCreator.class);
 
 	private static final boolean USE_DATA_WITH_LESS_THAN_9_VEHICLE_CLASSES = true;
 	final List<String> allNeededColumnHeaders = new ArrayList<>();

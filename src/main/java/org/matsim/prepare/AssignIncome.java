@@ -20,7 +20,8 @@
 
 package org.matsim.prepare;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.population.PersonUtils;
 import org.matsim.core.population.PopulationUtils;
@@ -33,7 +34,7 @@ public class AssignIncome {
     // this is a copy from the matsim-kelheim scenario
     // https://github.com/matsim-scenarios/matsim-kelheim/blob/master/src/main/java/org/matsim/run/prepare/PreparePopulation.java
 
-    private static final Logger log = Logger.getLogger(AssignIncome.class);
+    private static final Logger log = LogManager.getLogger(AssignIncome.class);
 
     public static void assignIncomeToPersonSubpopulationAccordingToSNZData(Population population){
         final Random rnd = new Random(1234);
