@@ -1,6 +1,5 @@
 package org.matsim.run;
 
-import com.google.inject.Singleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
@@ -11,13 +10,17 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.application.MATSimApplication;
+import org.matsim.application.analysis.emissions.AirPollutionByVehicleCategory;
+import org.matsim.application.analysis.emissions.AirPollutionSpatialAggregation;
+import org.matsim.application.analysis.noise.NoiseAnalysis;
 import org.matsim.application.prepare.population.DownSamplePopulation;
+import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
+import org.matsim.core.config.Config;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
-import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.PtFlatrate;
@@ -25,14 +28,16 @@ import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.run.policies.Tempo30Zone;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
-import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
 import java.util.HashMap;
 import java.util.List;
 
-@CommandLine.Command(header = ":: Gladbeck Scenario ::", version = "v1.0")
-@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class})
+@CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
+@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class})
+@MATSimApplication.Analysis({NoiseAnalysis.class, AirPollutionByVehicleCategory.class, AirPollutionSpatialAggregation.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
+
+	public static final String VERSION = "v1.0";
 
 	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
@@ -48,12 +53,18 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
 	public RunGladbeckScenario() {
-		//super("./scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml");
-		super("./scenarios/gladbeck-v1.0/input/gladbeck-v1.0-25pct.config.xml");
+		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-25pct.config.xml", VERSION));
 	}
 
 	public static void main(String[] args) {
 		MATSimApplication.run(RunGladbeckScenario.class, args);
+	}
+
+	@Override
+	protected Scenario createScenario(Config config) {
+		// Always switch off intermodal
+		this.intermodal = false;
+		return super.createScenario(config);
 	}
 
 	@Override
@@ -88,13 +99,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		super.prepareControler(controler);
 		//use income-dependent marginal utility of money for scoring
 		log.info("Using income dependent scoring");
-		controler.addOverridingModule(new AbstractModule() {
-			@Override
-			public void install() {
-				bind(ScoringParametersForPerson.class).to(IncomeDependentUtilityOfMoneyPersonScoringParameters.class).in(Singleton.class);
-			}
-		});
-
 		if (ptFlat) {
 			log.info("using pt flat");
 			double ptConstant = controler.getConfig().planCalcScore().getScoringParameters("person").getModes().get(TransportMode.pt).getConstant();

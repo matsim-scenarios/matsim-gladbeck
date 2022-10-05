@@ -12,7 +12,6 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.prepare.AssignIncome;
 import org.matsim.testcases.MatsimTestUtils;
 import static org.junit.Assert.assertTrue;
 
@@ -86,7 +85,8 @@ public class TestPtFlat {
             person.getAttributes().putAttribute("subpopulation", "person");
             scenario.getPopulation().addPerson(person);
 
-            AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
+            //AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
+            // TODO: assign randomly for this test
 
             for (Person p: scenario.getPopulation().getPersons().values()) {
                 personsEligibleForPtFlat.put(p.getId(),0);
