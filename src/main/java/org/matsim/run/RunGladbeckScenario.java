@@ -13,6 +13,7 @@ import org.matsim.application.MATSimApplication;
 import org.matsim.application.analysis.emissions.AirPollutionByVehicleCategory;
 import org.matsim.application.analysis.emissions.AirPollutionSpatialAggregation;
 import org.matsim.application.analysis.noise.NoiseAnalysis;
+import org.matsim.application.options.ShpOptions;
 import org.matsim.application.prepare.population.DownSamplePopulation;
 import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.application.prepare.population.FixSubtourModes;
@@ -50,6 +51,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
 	boolean tempo30Zone;
 
+	@CommandLine.Mixin
+	private ShpOptions shpFileTempo30;
+
+
 	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
 	public RunGladbeckScenario() {
@@ -86,7 +91,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (tempo30Zone) {
-			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource("/Users/gregorr/Desktop/Test_ScenarioCutOut/test.shp")));
+			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shpFileTempo30.getShapeFile().toString())));
 		}
 
 		if (schoolClosure) {
