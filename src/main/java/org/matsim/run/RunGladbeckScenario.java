@@ -19,6 +19,7 @@ import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
@@ -52,7 +53,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	boolean tempo30Zone;
 
 	@CommandLine.Mixin
-	private ShpOptions shpFileTempo30;
+	private ShpOptions shp;
 
 
 	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
@@ -69,6 +70,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected Scenario createScenario(Config config) {
 		// Always switch off intermodal
 		this.intermodal = false;
+		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
 		return super.createScenario(config);
 	}
 
@@ -91,7 +93,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (tempo30Zone) {
-			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shpFileTempo30.getShapeFile().toString())));
+			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
 
 		if (schoolClosure) {
