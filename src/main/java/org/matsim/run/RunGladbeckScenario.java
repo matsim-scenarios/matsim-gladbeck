@@ -55,6 +55,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Mixin
 	private ShpOptions shp;
 
+	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
+	private boolean simplePtFlat;
+
 
 	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
@@ -71,6 +74,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		// Always switch off intermodal
 		this.intermodal = false;
 		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
+		if (simplePtFlat) {
+			config.planCalcScore().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
+		}
 		return super.createScenario(config);
 	}
 
