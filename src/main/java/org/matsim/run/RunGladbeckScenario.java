@@ -59,7 +59,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
 	public RunGladbeckScenario() {
-		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-25pct.config.xml", VERSION));
+		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
 	}
 
 	public static void main(String[] args) {
