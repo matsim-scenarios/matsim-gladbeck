@@ -61,10 +61,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	}
 
 	@Override
-	protected Scenario createScenario(Config config) {
+	protected Config prepareConfig(Config config) {
 		// Always switch off intermodal
 		this.intermodal = false;
-		return super.createScenario(config);
+		return super.prepareConfig(config);
 	}
 
 	@Override
