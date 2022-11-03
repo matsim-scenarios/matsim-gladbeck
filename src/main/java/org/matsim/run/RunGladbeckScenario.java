@@ -13,11 +13,13 @@ import org.matsim.application.MATSimApplication;
 import org.matsim.application.analysis.emissions.AirPollutionByVehicleCategory;
 import org.matsim.application.analysis.emissions.AirPollutionSpatialAggregation;
 import org.matsim.application.analysis.noise.NoiseAnalysis;
+import org.matsim.application.options.ShpOptions;
 import org.matsim.application.prepare.population.DownSamplePopulation;
 import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
@@ -50,10 +52,17 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
 	boolean tempo30Zone;
 
+	@CommandLine.Mixin
+	private ShpOptions shp;
+
+	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
+	private boolean simplePtFlat;
+
+
 	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
 
 	public RunGladbeckScenario() {
-		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-25pct.config.xml", VERSION));
+		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
 	}
 
 	public static void main(String[] args) {
@@ -86,7 +95,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (tempo30Zone) {
-			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource("/Users/gregorr/Desktop/Test_ScenarioCutOut/test.shp")));
+			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
 
 		if (schoolClosure) {
