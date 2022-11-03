@@ -73,6 +73,12 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected Config prepareConfig(Config config) {
 		// Always switch off intermodal
 		this.intermodal = false;
+
+		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
+		if (simplePtFlat) {
+			config.planCalcScore().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
+		}
+
 		return super.prepareConfig(config);
 	}
 
