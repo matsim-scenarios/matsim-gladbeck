@@ -83,14 +83,14 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-metropole-ruhr</artifactId>
-			<version>master-43c55ca80a-1</version>
+			<version>master-99292af8ca-1</version>
 		</dependency>
 
 		<dependency>
 			<!-- Include the JUnit testing library.  Not transitive. -->
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
+			<version>4.13.2</version>
 			<scope>test</scope>
 		</dependency>
 
