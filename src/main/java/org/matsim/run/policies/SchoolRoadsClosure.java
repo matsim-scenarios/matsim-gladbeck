@@ -18,27 +18,20 @@ public class SchoolRoadsClosure {
 
          Collection<Link> links = null;
 
-         for (Link l: network.getLinks().values()) {
-             Id<Link> linkId = l.getId();
-
-
-             //Mosaikschule
-             if (linkId.toString().equals("5156341260014r")) {
-                 links.add(l);
-             }
-             if (linkId.toString().equals("5156341260014f")) {
-                 links.add(l);
-             }
-
-         }
-
         //store the values of the links before
         // first network change event everything to zero
-        NetworkChangeEvent networkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(830));
+         Link link = network.getLinks().get(Id.createLinkId("5156341260014r"));
+         Link link2 = network.getLinks().get(Id.createLinkId("5156341260014f"));
+
+         links.add(link);
+         links.add(link2);
+
+         NetworkChangeEvent networkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(830));
         networkChangeEvent.addLinks(links);
+         System.out.println(links.size());
         NetworkChangeEvent.ChangeType type = NetworkChangeEvent.ChangeType.FACTOR;
-        NetworkChangeEvent.ChangeValue changeValue = new NetworkChangeEvent.ChangeValue(type, 0.01);
-        networkChangeEvent.setFreespeedChange(changeValue);
+        NetworkChangeEvent.ChangeValue changeValue = new NetworkChangeEvent.ChangeValue(type, 0.0);
+        networkChangeEvent.setFlowCapacityChange(changeValue);
 
         NetworkChangeEvent revertNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(930));
         networkChangeEvent.addLinks(links);
