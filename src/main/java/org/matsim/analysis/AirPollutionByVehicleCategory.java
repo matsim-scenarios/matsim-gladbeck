@@ -26,6 +26,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -58,12 +59,19 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import picocli.CommandLine;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.matsim.application.ApplicationUtils.globFile;
+import static org.matsim.contrib.emissions.Pollutant.*;
 
 
 @CommandLine.Command(
@@ -216,6 +224,72 @@ public class AirPollutionByVehicleCategory implements MATSimAppCommand {
                 printer.printRecord(e.getKey(), e.getDoubleValue());
             }
         }
+
+
+        log.info("Emission analysis completed.");
+
+        log.info("Writing output...");
+        List<Pollutant> pollutants2Output = Arrays.asList(CO2_TOTAL, NOx, PM, PM_non_exhaust);
+        NumberFormat nf = NumberFormat.getInstance(Locale.US);
+        nf.setMaximumFractionDigits(4);
+        nf.setGroupingUsed(false);
+
+        BufferedWriter absolutWriter;
+        BufferedWriter perMeterWriter;
+        {
+            File absolutFile = new File(output + "absolut.csv");
+            File perMeterFile = new File(output + ".emissionsPerLink.csv");
+
+            absolutWriter = new BufferedWriter(new FileWriter(absolutFile));
+            perMeterWriter = new BufferedWriter(new FileWriter(perMeterFile));
+
+            absolutWriter.write("linkId");
+            perMeterWriter.write("linkId");
+
+            for (Pollutant pollutant : pollutants2Output) {
+                absolutWriter.write(";" + pollutant);
+                perMeterWriter.write(";" + pollutant + " [g/m]");
+
+            }
+            absolutWriter.newLine();
+            perMeterWriter.newLine();
+
+
+            Map<Id<Link>, Map<Pollutant, Double>> link2pollutants = emissionsOnLinkEventHandler.getLink2pollutants();
+
+            for (Id<Link> linkId : link2pollutants.keySet()) {
+                absolutWriter.write(linkId.toString());
+                perMeterWriter.write(linkId.toString());
+
+                for (Pollutant pollutant : pollutants2Output) {
+                    double emissionValue = 0.;
+                    if (link2pollutants.get(linkId).get(pollutant) != null) {
+                        emissionValue = link2pollutants.get(linkId).get(pollutant);
+                    }
+                    absolutWriter.write(";" + nf.format(emissionValue));
+
+                    double emissionPerM = Double.NaN;
+                    Link link = scenario.getNetwork().getLinks().get(linkId);
+                    if (link != null) {
+                        emissionPerM = emissionValue / link.getLength();
+                    }
+                    perMeterWriter.write(";" + nf.format(emissionPerM));
+
+                }
+                absolutWriter.newLine();
+                perMeterWriter.newLine();
+
+            }
+
+            absolutWriter.close();
+
+            perMeterWriter.close();
+
+        }
+
+        absolutWriter.close();
+        perMeterWriter.close();
+
 
         log.info("Done");
 
