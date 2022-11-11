@@ -196,11 +196,11 @@ public class AirPollutionByVehicleCategory implements MATSimAppCommand {
         EventWriterXML emissionEventWriter = new EventWriterXML(output.toString());
 
         Handler aggrHandler = new Handler();
-
+        EmissionsOnLinkEventHandler emissionsOnLinkEventHandler = new EmissionsOnLinkEventHandler(10.);
         emissionModule.getEmissionEventsManager().addHandler(emissionEventWriter);
         emissionModule.getEmissionEventsManager().addHandler(aggrHandler);
-        EmissionsOnLinkEventHandler emissionsOnLinkEventHandler = new EmissionsOnLinkEventHandler(10.);
-        eventsManager.addHandler(emissionsOnLinkEventHandler);
+        emissionModule.getEmissionEventsManager().addHandler(emissionsOnLinkEventHandler);
+
 
         eventsManager.initProcessing();
         MatsimEventsReader matsimEventsReader = new MatsimEventsReader(eventsManager);
