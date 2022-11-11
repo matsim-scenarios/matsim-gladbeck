@@ -237,8 +237,8 @@ public class AirPollutionByVehicleCategory implements MATSimAppCommand {
         BufferedWriter absolutWriter;
         BufferedWriter perMeterWriter;
         {
-            File absolutFile = new File(output + "absolut.csv");
-            File perMeterFile = new File(output + ".emissionsPerLink.csv");
+            File absolutFile = new File(Path.of(output.toString()) + "absolut.csv");
+            File perMeterFile = new File(Path.of(output.toString()) + ".emissionsPerLink.csv");
 
             absolutWriter = new BufferedWriter(new FileWriter(absolutFile));
             perMeterWriter = new BufferedWriter(new FileWriter(perMeterFile));

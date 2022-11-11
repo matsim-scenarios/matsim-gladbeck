@@ -16,7 +16,8 @@ public class Tempo30Zone {
         Set<? extends Link> carLinksInArea = network.getLinks().values().stream()
                 .filter(link -> link.getAllowedModes().contains(TransportMode.car)) //filter car links
                 .filter(link -> ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), geometries)) //spatial filter
-                .filter(link -> ! ((String)link.getAttributes().getAttribute("type")).contains("motorway") ) //we won't change motorways and motorway_links
+                .filter(link -> ! ((String)link.getAttributes().getAttribute("type")).contains("motorway") )//we won't change motorways and motorway_links
+                .filter(link -> !((String)link.getAttributes().getAttribute("type")).contains("trunk") )
                 .collect(Collectors.toSet());
 
 
