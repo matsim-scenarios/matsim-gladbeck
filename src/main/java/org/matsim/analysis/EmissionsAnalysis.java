@@ -1,6 +1,5 @@
 package org.matsim.analysis;
 import org.matsim.application.MATSimAppCommand;
-import org.matsim.application.analysis.emissions.AirPollutionByVehicleCategory;
 
 public class EmissionsAnalysis {
 
