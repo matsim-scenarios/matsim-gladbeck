@@ -28,6 +28,7 @@ import com.opencsv.validators.LineValidatorAggregator;
 import com.opencsv.validators.RowValidatorAggregator;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.network.NetworkUtils;
@@ -52,7 +53,8 @@ public class LinksInGladbeck {
 
         List<PreparedGeometry> gladbeckGeoms = ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(gladbeckShape));
         Network gladbeckNetwork = NetworkUtils.readNetwork("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.network.xml.gz");
-        writeLinksInShpCSV(gladbeckNetwork, gladbeckGeoms, "../../shared-svn/projects/GlaMoBi/networkLinksWithinGladbeck.tsv");
+        //writeLinksInShpCSV(gladbeckNetwork, gladbeckGeoms, "../../shared-svn/projects/GlaMoBi/networkLinksWithinGladbeck.tsv");
+        writeTempo30Zones(gladbeckNetwork, gladbeckGeoms,"../../shared-svn/projects/GlaMoBi/tempo30WithinGladbeck.tsv");
     }
 
     static void writeLinksInShpCSV(Network network, List<PreparedGeometry> preparedGeometryList, String outputFilePath){
@@ -75,30 +77,38 @@ public class LinksInGladbeck {
 
     }
 
-    /**
-     * would do this with CSVReader but we did not use default settings when writing this...
-     * @param filePath
-     * @return
-     * @throws FileNotFoundException
-     */
-    static Set<String> readLinkIdStrings(String filePath) throws FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+    public static void writeTempo30Zones(Network network, List<PreparedGeometry> geometries, String outputFilePath) {
+        Set<String[]> linkIds = new HashSet<>();
 
-        Set<String> linkIds = new HashSet<>();
+        Set<? extends Link> carLinksInArea = network.getLinks().values().stream()
+                .filter(link -> link.getAllowedModes().contains(TransportMode.car)) //filter car links
+                .filter(link -> ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), geometries)) //spatial filter
+                .filter(link -> !((String) link.getAttributes().getAttribute("type")).contains("motorway"))//we won't change motorways and motorway_links
+                .filter(link -> !((String) link.getAttributes().getAttribute("type")).contains("trunk"))
+                .collect(Collectors.toSet());
+
+
+        carLinksInArea.forEach(link -> {
+
+            //TODO Check what free speed for 30km/h streets is used
+            if (!link.getAttributes().getAttribute("type").equals("primary")) {
+                //apply 'tempo 30' to all roads but primary and motorways
+                if (link.getFreespeed() > 7.5)  {
+                    link.setFreespeed(7.5); //27 km/h is used in the net for 30 km/h
+                   linkIds.add(new String[] {link.getId().toString()});
+                }
+            }
+        });
 
         try {
-            reader.readLine();
-            String line = reader.readLine();
-            while(line != null){
-                linkIds.add(line);
-                line = reader.readLine();
-            }
-            reader.close();
-
+            CSVWriter writer = new CSVWriter(new FileWriter(outputFilePath), '\t', NO_QUOTE_CHARACTER, DEFAULT_ESCAPE_CHARACTER, DEFAULT_LINE_END);
+            writer.writeNext(new String[]{"linkId"});
+            writer.writeAll((Iterable<String[]>) linkIds.stream().toList());
+            writer.flush();
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return linkIds;
     }
 
 }

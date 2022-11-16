@@ -8,6 +8,7 @@ library(matsim)
 library(stringr)
 library("xlsx")
 library(ggalluvial)
+library(reshape2)
 
 ## person in gladbeck
 #persons<- read_csv2("/Users/gregorr/Documents/work/respos/git/matsim-gladbeck/scenarios/output/output_gladbeck-v1.0-10pct/008.output_persons.csv.gz", col_types = cols(person = col_double(), income = col_double()))
@@ -18,7 +19,7 @@ persons <- left_join(relevantPersons, persons, by="person")
 
 ####### data tyding
 baseCaseTrips <- matsim::readTripsTable("/Users/gregorr/Desktop/Test/GlaMoBi/workShop/basCaseContinued/gladbeck-v1.0.output_trips.csv.gz")
-policyCaseTrips <- matsim::readTripsTable("/Users/gregorr/Desktop/Test/GlaMoBi/workShop/tempo30V1.1/gladbeck-v1.0.output_trips.csv.gz")
+policyCaseTrips <- matsim::readTripsTable("/Users/gregorr/Desktop/Test/GlaMoBi/workShop/tempo30V1.1/gladbeck-v1.0.output_trips.csv")
 baseCaseTrips <- filter(baseCaseTrips, person %in% persons$person)
 policyCaseTrips <- filter(policyCaseTrips, person %in% persons$person)
 
@@ -38,22 +39,27 @@ policyCaseTrips <- policyCaseTrips %>%
 
 ### modal Shift
 
-baseCaseTrips$main_mode[grep(paste0(unite.columns, collapse = "|"), baseCaseTrips$main_mode)] 
-policyCaseTrips$main_mode[grep(paste0(unite.columns, collapse = "|"), policyCaseTrips$main_mode)]
+nrOfTripsBaseCase <- baseCaseTrips %>% group_by(main_mode) %>%
+  count(name = "nrOfTripsBaseCase") 
 
-baseCaseTrips  = baseCaseTrips %>% mutate(type = "Basisfall")
-policyCaseTrips  = policyCaseTrips %>% mutate(type = "Tempo 30")
+nrOfTripsPolicyCase <- policyCaseTrips %>% group_by(main_mode) %>%
+  count(name = "nrOfTripsPolicyCase") 
+nrOfTrips <- left_join(nrOfTripsBaseCase, nrOfTripsPolicyCase, by = "main_mode")
+nrOfTrips <-nrOfTrips %>% mutate(nrOfTripsPolicyCase = nrOfTripsPolicyCase*10)
+nrOfTrips <-nrOfTrips %>% mutate(nrOfTripsBaseCase = nrOfTripsBaseCase*10)
 
-total_trips = rbind(baseCaseTrips,policyCaseTrips)
+nrOfTrips <- melt(nrOfTrips)
+names(nrOfTrips)[3] <- "nrOfTripsPolicyCase"
 
-plt = ggplot(total_trips, aes(x =main_mode,fill = factor(type)))+
-  geom_bar(position = position_dodge())+
+
+modalShift <-ggplot(nrOfTrips, aes(x = main_mode, y= nrOfTripsPolicyCase, fill = variable)) +
+  geom_bar(stat="identity", width=.5, position = "dodge") +
+  ylab("Anzahl an Fahrten") +
+  scale_y_continuous(name=" Anzahl an Fahrten", labels = scales::comma_format(big.mark  = ".")) +
   theme_minimal() +
-  ylab("Anzahl Fahrten") +
-  xlab("Verkehrsmittel") +
-  scale_fill_discrete(name = "") +
-  labs(title = "Anzahl Fahrten je Verkehrsmittel")
-plt
+  scale_fill_discrete(name = NULL, labels = c("Base Case", "Tempo 30")) +
+  ggtitle("Anzahl Fahrten je Verkehrsmittel")
+modalShift
 
 ########################### trav time avg
 baseCaseTripsAverageTravTime <-baseCaseTrips %>%
