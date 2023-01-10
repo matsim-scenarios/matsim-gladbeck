@@ -77,6 +77,7 @@ baseCaseAverageTimePlot <- ggplot(data = baseCaseTripsAverageTravTime, aes(Verke
   ylab("durchschnittliche Reisezeit in s") +
   theme_minimal() +
   ylim(0,2000) +
+  geom_text(aes(label= round(mean,2)), nsmall=2, vjust=-0.5) +
   ggtitle("Basisfall") 
 
 policyCaseAverageTimePlot <- ggplot(data = policyCaseTripsAverageTravTime, aes(Verkehrsmittel, mean, fill = Verkehrsmittel)) +
@@ -84,6 +85,7 @@ policyCaseAverageTimePlot <- ggplot(data = policyCaseTripsAverageTravTime, aes(V
   ylab("durchschnittliche Reisezeit in s") +
   theme_minimal() +
   ylim(0,2000) +
+  geom_text(aes(label= round(mean,2)), nsmall=2, vjust=-0.5) +
   ggtitle("Kostenloser ÖPNV")
   
 baseCaseAverageTimePlot + policyCaseAverageTimePlot

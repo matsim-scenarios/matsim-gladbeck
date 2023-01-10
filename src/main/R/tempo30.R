@@ -19,17 +19,10 @@ persons <- left_join(relevantPersons, persons, by="person")
 
 ####### data tyding
 baseCaseTrips <- matsim::readTripsTable("/Users/gregorr/Desktop/Test/GlaMoBi/workShop/basCaseContinued/gladbeck-v1.0.output_trips.csv.gz")
-policyCaseTrips <- matsim::readTripsTable("/Users/gregorr/Desktop/Test/GlaMoBi/workShop/tempo30V1.1/gladbeck-v1.0.output_trips.csv")
+policyCaseTrips <- matsim::readTripsTable("/Users/gregorr/Desktop/Test/GlaMoBi/workShop/tempo30V1.1/gladbeck-v1.0.output_trips.csv.gz")
 baseCaseTrips <- filter(baseCaseTrips, person %in% persons$person)
 policyCaseTrips <- filter(policyCaseTrips, person %in% persons$person)
 
-baseCaseTrips <- baseCaseTrips %>%
-  mutate(main_mode = recode(main_mode, 	
-                                 pt_w_bike_used = 'pt', pt_w_car_used = 'pt'))
-
-policyCaseTrips <- policyCaseTrips %>%
-  mutate(main_mode = recode(main_mode, 	
-                            pt_w_bike_used = 'pt', pt_w_car_used = 'pt'))
 
 baseCaseTrips <- baseCaseTrips %>%
   mutate(end_activity_type = sapply(strsplit(end_activity_type,"_"),"[[",1)) 
@@ -51,22 +44,26 @@ nrOfTrips <-nrOfTrips %>% mutate(nrOfTripsBaseCase = nrOfTripsBaseCase*10)
 nrOfTrips <- melt(nrOfTrips)
 names(nrOfTrips)[3] <- "nrOfTripsPolicyCase"
 
-
 modalShift <-ggplot(nrOfTrips, aes(x = main_mode, y= nrOfTripsPolicyCase, fill = variable)) +
   geom_bar(stat="identity", width=.5, position = "dodge") +
   ylab("Anzahl an Fahrten") +
   scale_y_continuous(name=" Anzahl an Fahrten", labels = scales::comma_format(big.mark  = ".")) +
   theme_minimal() +
   scale_fill_discrete(name = NULL, labels = c("Base Case", "Tempo 30")) +
-  ggtitle("Anzahl Fahrten je Verkehrsmittel")
+  ggtitle("Anzahl Fahrten je Verkehrsmittel") +
+  xlab("Verkehrsmodus")
 modalShift
 
 ########################### trav time avg
-baseCaseTripsAverageTravTime <-baseCaseTrips %>%
+
+tripDataPolicyCaseNoLongTrips <- filter(policyCaseTrips, traveled_distance <20000)
+tripDataBaseCaseNoLongTrips<- filter(baseCaseTrips, traveled_distance <20000)
+
+baseCaseTripsAverageTravTime <-tripDataBaseCaseNoLongTrips %>%
   group_by(main_mode) %>%
   summarise(mean = mean(trav_time))
 
-policyCaseTripsAverageTravTime  <- policyCaseTrips %>%
+policyCaseTripsAverageTravTime  <- tripDataPolicyCaseNoLongTrips %>%
   group_by(main_mode) %>%
   summarise(mean = mean(trav_time))
 
@@ -74,7 +71,8 @@ baseCaseAverageTimePlot <- ggplot(data = baseCaseTripsAverageTravTime, aes(main_
   geom_col() +
   ylab("durchschnittliche Reisezeit in s") +
   theme_minimal() +
-  ylim(0,5000) +
+  ylim(0,2000) +
+  geom_text(aes(label= round(mean,2)), nsmall=2, vjust=-0.5) +
   xlab("Verkehrsmittel") +
   labs(title = "Durchschnittliche Reisezeit: Basisfall") +
   theme(legend.position = "none")
@@ -83,7 +81,8 @@ policyCaseAverageTimePlot <- ggplot(data = policyCaseTripsAverageTravTime, aes(m
   geom_col() +
   ylab("durchschnittliche Reisezeit in s") +
   theme_minimal() +
-  ylim(0,5000) +
+  ylim(0,2000) +
+  geom_text(aes(label= round(mean,2)), nsmall=2, vjust=-0.5) +
   xlab("Verkehrsmittel") +
   labs(title = "Durchschnittliche Reisezeit: Tempo 30") +
   scale_fill_discrete(name = "Verkehrsmittel")
@@ -91,11 +90,15 @@ policyCaseAverageTimePlot <- ggplot(data = policyCaseTripsAverageTravTime, aes(m
 baseCaseAverageTimePlot + policyCaseAverageTimePlot
 
 #### tripDistance
-baseCaseTripsAverageTravDistance <-baseCaseTrips %>%
+tripDataPolicyCaseNoLongTrips <- filter(policyCaseTrips, traveled_distance <20000)
+tripDataBaseCaseNoLongTrips<- filter(baseCaseTrips, traveled_distance <20000)
+
+
+baseCaseTripsAverageTravDistance <-tripDataBaseCaseNoLongTrips %>%
   group_by(main_mode) %>%
   dplyr::summarise(mean = mean(traveled_distance))
 
-policyCaseTripsAverageTravDistance  <- policyCaseTrips %>%
+policyCaseTripsAverageTravDistance  <- tripDataPolicyCaseNoLongTrips %>%
   group_by(main_mode) %>%
   summarise(mean = mean(traveled_distance))
 
@@ -104,6 +107,7 @@ baseCaseAverageTravDistancePlot <- ggplot(data = baseCaseTripsAverageTravDistanc
   ylab("durchschnittliche Tripdistanz in m") +
   theme_minimal() +
   xlab("Verkehrsmittel") +
+  geom_text(aes(label= round(mean,2)), nsmall=2, vjust=-0.5) +
   labs(title = "Durchschnittliche Tripdistanz: Basisfall") +
   theme(legend.position = "none")
 
@@ -113,6 +117,7 @@ policyCaseAverageTravDistancePlot <- ggplot(data = policyCaseTripsAverageTravDis
   theme_minimal() +
   xlab("Verkehrsmittel") +
   labs(title = "Durchschnittliche Tripdistanz: Tempo 30") +
+  geom_text(aes(label= round(mean,2)), nsmall=2, vjust=-0.5) +
   scale_fill_discrete(name = "Verkehrsmittel")
 
 baseCaseAverageTravDistancePlot + policyCaseAverageTravDistancePlot

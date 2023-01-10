@@ -15,6 +15,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.testcases.MatsimTestUtils;
 import static org.junit.Assert.assertTrue;
 
+
 public class TestPtFlat {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
