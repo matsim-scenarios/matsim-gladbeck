@@ -105,7 +105,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (schoolClosure) {
-			new SchoolRoadsClosure().closeSchoolRoads(scenario.getNetwork());
+			new SchoolRoadsClosure().closeSchoolLinks(null, scenario.getNetwork(), 0, 0);
 		}
 	}
 

@@ -8,41 +8,53 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.NetworkChangeEventsWriter;
 import org.matsim.core.utils.misc.Time;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 public class SchoolRoadsClosure {
+    public void closeSchoolLinks(List<Id<Link>> linkList, Network network, int startTime, int endTime) {
 
-     public Network closeSchoolRoads(Network network) {
+        Collection<Link> links = new ArrayList<>();
+        HashMap<Link, Double > oldValues = new HashMap<>();
+        ArrayList<NetworkChangeEvent> listOfNetworkChangeEvents = new ArrayList<>();
 
-         Collection<Link> links = null;
+        for (Link l: network.getLinks().values()) {
+            if (linkList.contains(l.getId())) {
+                links.add(l);
+                oldValues.put(l, l.getCapacity());
+            }
+        }
 
-        //store the values of the links before
-        // first network change event everything to zero
-         Link link = network.getLinks().get(Id.createLinkId("5156341260014r"));
-         Link link2 = network.getLinks().get(Id.createLinkId("5156341260014f"));
-         links.add(link);
-         links.add(link2);
+        NetworkChangeEvent networkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(startTime));
+        networkChangeEvent.addLinks(oldValues.keySet());
+        NetworkChangeEvent.ChangeType type = NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS;
+        NetworkChangeEvent.ChangeValue changeValue = new NetworkChangeEvent.ChangeValue(type, 0.0);
+        networkChangeEvent.setFlowCapacityChange(changeValue);
 
-         NetworkChangeEvent networkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(830));
-         networkChangeEvent.addLinks(links);
-         NetworkChangeEvent.ChangeType type = NetworkChangeEvent.ChangeType.FACTOR;
-         NetworkChangeEvent.ChangeValue changeValue = new NetworkChangeEvent.ChangeValue(type, 0.0);
-         networkChangeEvent.setFlowCapacityChange(changeValue);
+        for(Link l: links) {
+            NetworkChangeEvent reverseNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(1330));
+            reverseNetworkChangeEvent.addLink(l);
+            NetworkChangeEvent.ChangeValue reverseChangeValue = new NetworkChangeEvent.ChangeValue(type, l.getCapacity());
+            reverseNetworkChangeEvent.setFlowCapacityChange(reverseChangeValue);
+            listOfNetworkChangeEvents.add(reverseNetworkChangeEvent);
+        }
 
-         NetworkChangeEvent revertNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(930));
-         networkChangeEvent.addLinks(links);
-         NetworkChangeEvent.ChangeValue revertChangeValue = new NetworkChangeEvent.ChangeValue(type, 100.0);
-         networkChangeEvent.setFreespeedChange(revertChangeValue);
-         NetworkUtils.addNetworkChangeEvent(network, revertNetworkChangeEvent);
-         ArrayList<NetworkChangeEvent> listOfNetworkChangeEvents = new ArrayList<>();
-         listOfNetworkChangeEvents.add(networkChangeEvent);
-         listOfNetworkChangeEvents.add(revertNetworkChangeEvent);
-         NetworkChangeEventsWriter networkChangeEventsWriter = new NetworkChangeEventsWriter();
-         networkChangeEventsWriter.write("/Users/gregorr/Desktop/Test/GlaMoBi/TestNetworkChangeEvent.xml", listOfNetworkChangeEvents);
+        //revert changes
+        NetworkChangeEvent reverseNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(endTime));
+        reverseNetworkChangeEvent.addLinks(links);
+        NetworkChangeEvent.ChangeValue reverseChangeValue = new NetworkChangeEvent.ChangeValue(type, 1000.0);
+        reverseNetworkChangeEvent.setFlowCapacityChange(reverseChangeValue);
 
-        return network;
+        //adding list of change events to the network
+        listOfNetworkChangeEvents.add(networkChangeEvent);
+
+        for (int ii = 0; ii< listOfNetworkChangeEvents.size(); ii++) {
+            NetworkUtils.addNetworkChangeEvent(network, listOfNetworkChangeEvents.get(ii));
+        }
+
+        //NetworkChangeEventsWriter networkChangeEventsWriter = new NetworkChangeEventsWriter();
+       //networkChangeEventsWriter.write(testUtils.getOutputDirectory()+ "testNetworkChangeEvent.xml", listOfNetworkChangeEvents);
     }
+
+
 
 }
