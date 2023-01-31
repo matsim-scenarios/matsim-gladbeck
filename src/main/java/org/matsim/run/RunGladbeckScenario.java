@@ -6,6 +6,7 @@ import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
@@ -31,6 +32,7 @@ import org.matsim.run.policies.Tempo30Zone;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -105,7 +107,33 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (schoolClosure) {
-			new SchoolRoadsClosure().closeSchoolLinks(null, scenario.getNetwork(), 0, 0);
+
+
+			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
+			// Mosaikschule
+			listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
+			listOfSchoolLinks.add(Id.createLinkId("5156341260014f"));
+			listOfSchoolLinks.add(Id.createLinkId("380432140001r"));
+			listOfSchoolLinks.add(Id.createLinkId("380432140001f"));
+			listOfSchoolLinks.add(Id.createLinkId("381870670005f"));
+			listOfSchoolLinks.add(Id.createLinkId("381870670005r"));
+			listOfSchoolLinks.add(Id.createLinkId("353353090002f"));
+			listOfSchoolLinks.add(Id.createLinkId("353353090002r"));
+
+			//  werner von siemens schule gladbeck
+			listOfSchoolLinks.add(Id.createLinkId("358770500002f"));
+			listOfSchoolLinks.add(Id.createLinkId("358770500002r"));
+			listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
+			listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
+			listOfSchoolLinks.add(Id.createLinkId("358770510002f"));
+			listOfSchoolLinks.add(Id.createLinkId("1157881300007f"));
+			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+			listOfSchoolLinks.add(Id.createLinkId("481471120002f"));
+			listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
+
+			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
 	}
 

@@ -31,7 +31,7 @@ public class SchoolRoadsClosure {
         networkChangeEvent.setFlowCapacityChange(changeValue);
 
         for(Link l: links) {
-            NetworkChangeEvent reverseNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(1330));
+            NetworkChangeEvent reverseNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(endTime));
             reverseNetworkChangeEvent.addLink(l);
             NetworkChangeEvent.ChangeValue reverseChangeValue = new NetworkChangeEvent.ChangeValue(type, l.getCapacity());
             reverseNetworkChangeEvent.setFlowCapacityChange(reverseChangeValue);
