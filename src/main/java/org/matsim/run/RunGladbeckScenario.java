@@ -81,6 +81,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			config.planCalcScore().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
 		}
 
+		config.network().setTimeVariantNetwork(true);
+
 		return super.prepareConfig(config);
 	}
 
