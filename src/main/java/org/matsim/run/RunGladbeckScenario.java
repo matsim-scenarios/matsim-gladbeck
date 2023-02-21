@@ -21,6 +21,7 @@ import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.config.groups.VspExperimentalConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.TripStructureUtils;
@@ -44,9 +45,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	public static final String VERSION = "v1.0";
 
 	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
-
-	@CommandLine.Option(names = "--ptFlat", defaultValue = "false", description = "measures to allow car users to have free pt")
-	private boolean ptFlat;
 
 	@CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
 	boolean schoolClosure;
@@ -90,20 +88,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected void prepareScenario(Scenario scenario) {
 		super.prepareScenario(scenario);
 
-		if (ptFlat) {
-			for (Person p : scenario.getPopulation().getPersons().values()) {
-				Plan plan = p.getSelectedPlan();
-				List<Leg> legs = TripStructureUtils.getLegs(plan);
-				//only car users are allowed to enjoy the pt flatrate
-				for (Leg leg : legs) {
-					if (leg.getMode().equals(TransportMode.car)) {
-						personsEligibleForPtFlat.put(p.getId(), 0);
-					}
-				}
-			}
-			log.info("Number of Agents eligible for pt flat: " + personsEligibleForPtFlat.size());
-		}
-
 		if (tempo30Zone) {
 			Tempo30Zone.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
@@ -141,24 +125,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@Override
 	protected void prepareControler(Controler controler) {
+		controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
 		super.prepareControler(controler);
 		//use income-dependent marginal utility of money for scoring
-		log.info("Using income dependent scoring");
-		if (ptFlat) {
-			log.info("using pt flat");
-			double ptConstant = controler.getConfig().planCalcScore().getScoringParameters("person").getModes().get(TransportMode.pt).getConstant();
-			log.info("pt constant is: " + ptConstant);
-			double ptDailyMonetaryConstant = controler.getConfig().planCalcScore().getScoringParameters("person").getModes().get(TransportMode.pt).getDailyMonetaryConstant();
-			log.info("daily monetary constant is: " + ptDailyMonetaryConstant);
-			PtFlatrate ptFlatrate = new PtFlatrate(personsEligibleForPtFlat, -1 * ptConstant, -1 * ptDailyMonetaryConstant);
-			controler.addOverridingModule(new AbstractModule() {
-				@Override
-				public void install() {
-					addEventHandlerBinding().toInstance(ptFlatrate);
-					addControlerListenerBinding().toInstance(ptFlatrate);
-					install(new PersonMoneyEventsAnalysisModule());
-				}
-			});
-		}
+
 	}
 }
