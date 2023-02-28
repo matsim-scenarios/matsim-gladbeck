@@ -32,22 +32,19 @@ import static org.junit.Assert.assertTrue;
 
 public class TestSchoolClosure {
 
-    private static final String inputNetworkFile = "/Users/gregorr/Downloads/network.xml";
-    private static final String configFile = "/Users/gregorr/Downloads/config.xml";
     private static final String plansFile = "/Users/gregorr/Downloads/plans4.xml";
-
     @Rule
     public MatsimTestUtils testUtils = new MatsimTestUtils();
 
     @Test
     public void testSchoolClosure() {
 
-        Config config = ConfigUtils.loadConfig(configFile);
+        Config config = ConfigUtils.loadConfig("https://raw.githubusercontent.com/matsim-org/matsim-example-project/master/scenarios/equil/config.xml");
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
         config.controler().setOutputDirectory(testUtils.getOutputDirectory());
         config.controler().setRunId("testSchool");
         config.plans().setInputFile(plansFile);
-        config.network().setInputFile(inputNetworkFile);
+        config.network().setInputFile("https://raw.githubusercontent.com/matsim-org/matsim-example-project/master/scenarios/equil/network.xml");
         config.controler().setLastIteration(0);
         config.network().setTimeVariantNetwork(true);
         Scenario scenario = ScenarioUtils.loadScenario(config);
@@ -63,7 +60,6 @@ public class TestSchoolClosure {
 
         var personWithFreeRoad = population.getPersons().get(Id.createPersonId("4"));
         var personWithoutFreeRoad =  population.getPersons().get(Id.createPersonId("1"));
-
         assertTrue(personWithFreeRoad.getSelectedPlan().getScore() > personWithoutFreeRoad.getSelectedPlan().getScore());
 
     }

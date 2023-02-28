@@ -38,12 +38,6 @@ public class SchoolRoadsClosure {
             listOfNetworkChangeEvents.add(reverseNetworkChangeEvent);
         }
 
-        //revert changes
-        NetworkChangeEvent reverseNetworkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(endTime));
-        reverseNetworkChangeEvent.addLinks(links);
-        NetworkChangeEvent.ChangeValue reverseChangeValue = new NetworkChangeEvent.ChangeValue(type, 1000.0);
-        reverseNetworkChangeEvent.setFlowCapacityChange(reverseChangeValue);
-
         //adding list of change events to the network
         listOfNetworkChangeEvents.add(networkChangeEvent);
 
