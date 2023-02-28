@@ -58,9 +58,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
 	private boolean simplePtFlat;
 
-
-	static HashMap<Id<Person>, Integer> personsEligibleForPtFlat = new HashMap<>();
-
 	public RunGladbeckScenario() {
 		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
 	}
@@ -75,9 +72,12 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		this.intermodal = false;
 
 		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
+
 		if (simplePtFlat) {
 			config.planCalcScore().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
 		}
+
+		// this is for the school closure case
 		config.network().setTimeVariantNetwork(true);
 
 		return super.prepareConfig(config);
@@ -92,8 +92,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (schoolClosure) {
-
-
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
 			// Mosaikschule
 			listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
@@ -117,7 +115,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
 			listOfSchoolLinks.add(Id.createLinkId("481471120002f"));
 			listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
-
 			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
 	}
@@ -126,7 +123,5 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected void prepareControler(Controler controler) {
 		controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
 		super.prepareControler(controler);
-		//use income-dependent marginal utility of money for scoring
-
 	}
 }
