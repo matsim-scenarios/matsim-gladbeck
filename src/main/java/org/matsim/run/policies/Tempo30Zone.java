@@ -16,18 +16,15 @@ public class Tempo30Zone {
         Set<? extends Link> carLinksInArea = network.getLinks().values().stream()
                 .filter(link -> link.getAllowedModes().contains(TransportMode.car)) //filter car links
                 .filter(link -> ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), geometries)) //spatial filter
-                .filter(link -> ! ((String)link.getAttributes().getAttribute("type")).contains("motorway") )//we won't change motorways and motorway_links
-                .filter(link -> !((String)link.getAttributes().getAttribute("type")).contains("trunk") )
+                .filter(link -> !((String) link.getAttributes().getAttribute("type")).contains("motorway"))//we won't change motorways and motorway_links
+                .filter(link -> !((String) link.getAttributes().getAttribute("type")).contains("trunk"))
+                .filter(link -> !((String) link.getAttributes().getAttribute("type")).contains("primary"))
                 .collect(Collectors.toSet());
 
 
         carLinksInArea.forEach(link -> {
-
-            //TODO Check what free speed for 30km/h streets is used
-            if(!link.getAttributes().getAttribute("type").equals("primary")){
-                //apply 'tempo 30' to all roads but primary and motorways
-                if(link.getFreespeed() > 7.5) link.setFreespeed(7.5); //27 km/h is used in the net for 30 km/h streets
-            }
+            //apply 'tempo 30' to all roads but primary and motorways
+            link.setFreespeed(link.getFreespeed() * 0.6); //27 km/h is used in the net for 30 km/h streets
         });
 
     }
