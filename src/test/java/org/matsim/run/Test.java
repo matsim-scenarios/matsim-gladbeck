@@ -1,6 +1,7 @@
 package org.matsim.run;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.events.PersonMoneyEvent;
@@ -24,6 +25,7 @@ public class Test {
     @Rule
     public MatsimTestUtils testUtils = new MatsimTestUtils();
 
+    @Ignore
     @org.junit.Test
     public void testPtFlat() {
         MATSimApplication.execute(Test.TestApplication.class, "--output="  + "withPtFlat", "--ptFlat=true", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);

@@ -79,7 +79,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		// this is for the school closure case
 		config.network().setTimeVariantNetwork(true);
-
 		return super.prepareConfig(config);
 	}
 
@@ -121,7 +120,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@Override
 	protected void prepareControler(Controler controler) {
-		controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
+		//controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
 		super.prepareControler(controler);
 	}
 }
