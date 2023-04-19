@@ -19,6 +19,7 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.misc.Time;
+import org.matsim.examples.ExamplesUtils;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.testcases.MatsimTestUtils;
 
@@ -32,19 +33,16 @@ import static org.junit.Assert.assertTrue;
 
 public class TestSchoolClosure {
 
-    private static final String plansFile = "/Users/gregorr/Downloads/plans4.xml";
     @Rule
     public MatsimTestUtils testUtils = new MatsimTestUtils();
 
     @Test
     public void testSchoolClosure() {
-
-        Config config = ConfigUtils.loadConfig("https://raw.githubusercontent.com/matsim-org/matsim-example-project/master/scenarios/equil/config.xml");
+        String inputPath = String.valueOf(ExamplesUtils.getTestScenarioURL("chessboard"));
+        Config config = ConfigUtils.loadConfig(inputPath + "config.xml");
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
         config.controler().setOutputDirectory(testUtils.getOutputDirectory());
         config.controler().setRunId("testSchool");
-        config.plans().setInputFile(plansFile);
-        config.network().setInputFile("https://raw.githubusercontent.com/matsim-org/matsim-example-project/master/scenarios/equil/network.xml");
         config.controler().setLastIteration(0);
         config.network().setTimeVariantNetwork(true);
         Scenario scenario = ScenarioUtils.loadScenario(config);
@@ -61,7 +59,6 @@ public class TestSchoolClosure {
         var personWithFreeRoad = population.getPersons().get(Id.createPersonId("4"));
         var personWithoutFreeRoad =  population.getPersons().get(Id.createPersonId("1"));
         assertTrue(personWithFreeRoad.getSelectedPlan().getScore() > personWithoutFreeRoad.getSelectedPlan().getScore());
-
     }
 
 

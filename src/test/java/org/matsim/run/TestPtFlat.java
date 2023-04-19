@@ -1,5 +1,6 @@
-/*package org.matsim.run;
+package org.matsim.run;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
@@ -13,9 +14,11 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.testcases.MatsimTestUtils;
+import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
+
 import static org.junit.Assert.assertTrue;
 
-
+@Ignore
 public class TestPtFlat {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
@@ -29,16 +32,14 @@ public class TestPtFlat {
 
         var outputDir = testUtils.getOutputDirectory();
 
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--ptFlat=true", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--ptFlat=false", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--simplePtFlat=true", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--simplePtFlat=false", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
 
         // load output of both runs
         var scenarioWithPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithPtFlat).readFile(outputDir + "withPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
-
         var scenarioWithoutPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithoutPtFlat).readFile(outputDir + "withoutPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
-
         // somehow compare the two routes
         var personWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
         var personWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
@@ -48,7 +49,6 @@ public class TestPtFlat {
     }
 
     public static class TestApplication extends RunGladbeckScenario {
-
         private static final String RUN_ID = "TestApplication";
 
         @Override
@@ -57,7 +57,6 @@ public class TestPtFlat {
             preparedConfig.global().setNumberOfThreads(1);
             preparedConfig.qsim().setNumberOfThreads(1);
             preparedConfig.plans().setInputFile(null);
-            //need multiple iteration for modeChoice
             preparedConfig.controler().setLastIteration(0);
             preparedConfig.controler().setRunId(RUN_ID);
             return preparedConfig;
@@ -70,28 +69,22 @@ public class TestPtFlat {
             // add single person with two activities
             var factory = scenario.getPopulation().getFactory();
             var plan = factory.createPlan();
-            var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("242353520009f")).getCoord();
+            var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65711")).getCoord();
             var home = factory.createActivityFromCoord("home_600.0", homeCoord);
             home.setEndTime(50400);
             plan.addActivity(home);
             var leg = factory.createLeg(TransportMode.pt);
             leg.setMode(TransportMode.pt);
             plan.addLeg(leg);
-            var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("3953616600000f")).getCoord();
+            var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65377")).getCoord();
             var other = factory.createActivityFromCoord("other_3600.0",otherCoord);
             other.setEndTime(54000);
             plan.addActivity(other);
             var person = factory.createPerson(personId);
             person.addPlan(plan);
             person.getAttributes().putAttribute("subpopulation", "person");
+            person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
             scenario.getPopulation().addPerson(person);
-
-            //AssignIncome.assignIncomeToPersonSubpopulationAccordingToSNZData(scenario.getPopulation());
-            // TODO: assign randomly for this test
-
-            for (Person p: scenario.getPopulation().getPersons().values()) {
-                personsEligibleForPtFlat.put(p.getId(),0);
-            }
             super.prepareScenario(scenario);
 
         }
@@ -102,4 +95,4 @@ public class TestPtFlat {
         }
     }
 
-} */
+}
