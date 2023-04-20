@@ -20,7 +20,6 @@ import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.testcases.MatsimTestUtils;
 import playground.vsp.openberlinscenario.cemdap.output.ActivityTypes;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
