@@ -39,7 +39,6 @@ public class TestKlimaTaler {
         config.controler().setOutputDirectory("output/KlimaTalerTest/");
         config.global().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
-
         PlanCalcScoreConfigGroup.ModeParams modeParamsBike = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike);
         config.planCalcScore().addModeParams(modeParamsBike);
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
