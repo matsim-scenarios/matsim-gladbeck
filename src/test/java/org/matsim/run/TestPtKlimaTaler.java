@@ -34,7 +34,7 @@ public class TestPtKlimaTaler {
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controler controler = new Controler(scenario);
-        KlimaTaler klimaTaler = new KlimaTaler(2.0,scenario.getNetwork());
+        KlimaTaler klimaTaler = new KlimaTaler(1.0,scenario.getNetwork());
         addKlimaTaler(controler, klimaTaler);
         controler.addOverridingModule(new PersonMoneyEventsAnalysisModule());
         controler.run();

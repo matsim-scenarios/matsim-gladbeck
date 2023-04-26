@@ -52,7 +52,7 @@ public class TestKlimaTaler {
         }
         Population population = scenario.getPopulation();
         createExampleParkingPopulation(population);
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(2.0,scenario.getNetwork());
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(1.0,scenario.getNetwork());
         Controler controler = new Controler(scenario);
         addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator);
         controler.addOverridingModule(new PersonMoneyEventsAnalysisModule());
