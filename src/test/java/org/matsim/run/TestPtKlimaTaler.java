@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -34,7 +35,7 @@ public class TestPtKlimaTaler {
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controler controler = new Controler(scenario);
-        KlimaTaler klimaTaler = new KlimaTaler(1.0,scenario.getNetwork());
+        KlimaTaler klimaTaler = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork());
         addKlimaTaler(controler, klimaTaler);
         controler.addOverridingModule(new PersonMoneyEventsAnalysisModule());
         controler.run();

@@ -43,12 +43,9 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
         if (event.getLegMode().equals(TransportMode.walk)) {
             Id<Link> linkId = event.getLinkId();
             Coord endcoord = network.getLinks().get(linkId).getCoord();
-            //here we have to check wether an agents has an depature location if not he used pt
+            Coord startCoord = this.agentDepartureLocations.remove(event.getPersonId());
 
-           /*if (!this.agentDepartureLocations.containsKey(event.getPersonId())) {
-                log.info("walk leg with no starting location, must be acess to pt");
-            } else {*/
-                Coord startCoord = this.agentDepartureLocations.remove(event.getPersonId());
+            if (startCoord != null) {
                 double beelineDistance = CoordUtils.calcEuclideanDistance(startCoord, endcoord);
                 double distance = beelineDistance * beelineDistanceFactor;
                 if (!distanceTravelledWalk.containsKey(event.getPersonId())) {
@@ -57,12 +54,8 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
                     distance = distanceTravelledWalk.get(event.getPersonId()) + distance;
                     distanceTravelledWalk.replace(event.getPersonId(), distance);
                 }
-
-
-            //}
+            } else log.info("pt walk");
         }
-
-
     }
 
     @Override
@@ -141,11 +134,11 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
         if (vehicles2Persons.containsKey(linkLeaveEvent.getVehicleId())) {
             Id<Person> personId = vehicles2Persons.get(linkLeaveEvent.getVehicleId());
             if (distanceTravelledBike.containsKey(personId)) {
-                log.info("bike leaves link "+ linkLeaveEvent.getVehicleId());
+                log.info("bike leaves link " + linkLeaveEvent.getVehicleId());
                 double linkLength = network.getLinks().get(linkLeaveEvent.getLinkId()).getLength();
                 System.out.println("old distance: " + distanceTravelledBike.get(linkLeaveEvent.getVehicleId()));
                 double distanceTravelled = distanceTravelledBike.get(personId) + linkLength;
-                System.out.println("new distance: "+ distanceTravelled);
+                System.out.println("new distance: " + distanceTravelled);
                 distanceTravelledBike.replace(personId, distanceTravelled);
             }
 
