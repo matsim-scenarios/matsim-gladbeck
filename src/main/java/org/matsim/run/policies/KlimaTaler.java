@@ -132,7 +132,6 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
             Id<Person> person = idDoubleEntry.getKey();
             double emissionsSaved = idDoubleEntry.getValue() * 1.;
             double klimaTaler = emissionsSaved / 1 * 1.0;
-            System.out.println("PtDistance" + idDoubleEntry.getValue());
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForPt", null, null));
         }
     }
@@ -142,13 +141,14 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
         if (vehicles2Persons.containsKey(linkLeaveEvent.getVehicleId())) {
             Id<Person> personId = vehicles2Persons.get(linkLeaveEvent.getVehicleId());
             if (distanceTravelledBike.containsKey(personId)) {
-                System.out.println("bike leaves link "+ linkLeaveEvent.getVehicleId());
+                log.info("bike leaves link "+ linkLeaveEvent.getVehicleId());
                 double linkLength = network.getLinks().get(linkLeaveEvent.getLinkId()).getLength();
                 System.out.println("old distance: " + distanceTravelledBike.get(linkLeaveEvent.getVehicleId()));
                 double distanceTravelled = distanceTravelledBike.get(personId) + linkLength;
                 System.out.println("new distance: "+ distanceTravelled);
                 distanceTravelledBike.replace(personId, distanceTravelled);
             }
+
             if (distanceTravelledPt.containsKey(personId)) {
                 double linkLength = network.getLinks().get(linkLeaveEvent.getLinkId()).getLength();
                 double distanceTravelled = distanceTravelledPt.get(personId) + linkLength;

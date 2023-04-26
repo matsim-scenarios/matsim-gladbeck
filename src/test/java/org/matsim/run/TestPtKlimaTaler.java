@@ -15,7 +15,7 @@ import org.matsim.testcases.MatsimTestUtils;
 
 import java.io.IOException;
 
-import static org.matsim.run.TestKlimaTaler.addKlimaTaler;
+import static org.matsim.run.TestKlimaTalerWalk.addKlimaTaler;
 
 public class TestPtKlimaTaler {
 
