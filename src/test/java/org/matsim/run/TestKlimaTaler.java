@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.matsim.run.RunGladbeckScenario.addKlimaTaler;
+
 public class TestKlimaTaler {
 
     @Rule
@@ -41,7 +43,7 @@ public class TestKlimaTaler {
         config.qsim().setNumberOfThreads(1);
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork());
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(), 10.0);
         Person person = scenario.getPopulation().getPersons().get(Id.createPersonId("10"));
         scenario.getPopulation().getPersons().clear();
         scenario.getPopulation().addPerson(person);
@@ -74,7 +76,7 @@ public class TestKlimaTaler {
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controler controler = new Controler(scenario);
-        KlimaTaler klimaTaler = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork());
+        KlimaTaler klimaTaler = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(), 10.0);
         addKlimaTaler(controler, klimaTaler);
         KlimaTalerTestListener handler = new KlimaTalerTestListener();
         controler.addOverridingModule(new AbstractModule() {
@@ -109,7 +111,7 @@ public class TestKlimaTaler {
         }
         Population population = scenario.getPopulation();
         createWalkingAgent(population);
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork());
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(), 10.0);
         Controler controler = new Controler(scenario);
         addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator);
         KlimaTalerTestListener handler = new KlimaTalerTestListener();
@@ -128,16 +130,7 @@ public class TestKlimaTaler {
     }
 
 
-    public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                addEventHandlerBinding().toInstance(klimaTaler);
-                addControlerListenerBinding().toInstance(klimaTaler);
-                new PersonMoneyEventsAnalysisModule();
-            }
-        });
-    }
+
 
     final void createWalkingAgent(Population population) {
         population.getPersons().clear();

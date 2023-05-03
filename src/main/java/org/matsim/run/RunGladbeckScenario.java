@@ -2,6 +2,7 @@ package org.matsim.run;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -17,9 +18,11 @@ import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.ScenarioCutOut;
+import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
@@ -49,6 +52,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
 	private boolean simplePtFlat;
 
+	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
+	double klimaTalerMoneyAmount;
+
 	public RunGladbeckScenario() {
 		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
 	}
@@ -62,14 +68,16 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		// Always switch off intermodal
 		this.intermodal = false;
 
+		// so we don´t use the rvr accessEgressModeToLinkPlusTimeConstant
 		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
 
 		if (simplePtFlat) {
 			config.planCalcScore().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
 		}
 
-		// this is for the school closure case
+		// this is needed for the school closure case
 		config.network().setTimeVariantNetwork(true);
+
 		return super.prepareConfig(config);
 	}
 
@@ -83,6 +91,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		if (schoolClosure) {
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
+
+			//TODO switch to shp file
 			// Mosaikschule
 			listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
 			listOfSchoolLinks.add(Id.createLinkId("5156341260014f"));
@@ -92,7 +102,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			listOfSchoolLinks.add(Id.createLinkId("381870670005r"));
 			listOfSchoolLinks.add(Id.createLinkId("353353090002f"));
 			listOfSchoolLinks.add(Id.createLinkId("353353090002r"));
-
 			//  werner von siemens schule gladbeck
 			listOfSchoolLinks.add(Id.createLinkId("358770500002f"));
 			listOfSchoolLinks.add(Id.createLinkId("358770500002r"));
@@ -111,7 +120,26 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@Override
 	protected void prepareControler(Controler controler) {
+
 		//controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
+
+		if (klimaTalerMoneyAmount != 0.0) {
+			KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getConfig().plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
+			addKlimaTaler(controler, klimaTaler);
+		}
+
 		super.prepareControler(controler);
+	}
+
+
+	public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				addEventHandlerBinding().toInstance(klimaTaler);
+				addControlerListenerBinding().toInstance(klimaTaler);
+				new PersonMoneyEventsAnalysisModule();
+			}
+		});
 	}
 }

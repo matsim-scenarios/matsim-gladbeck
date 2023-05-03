@@ -30,12 +30,14 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
     private static final Logger log = LogManager.getLogger(KlimaTaler.class);
     private final double beelineDistanceFactor;
     private final Network network;
+    private final double klimaTaler;
 
     private Map<Id<Person>, Coord> agentDepartureLocations = new HashMap<>();
 
-    public KlimaTaler(double modeSpecificBeelineDistanceFactor, Network network) {
+    public KlimaTaler(double modeSpecificBeelineDistanceFactor, Network network, double klimaTaler) {
         this.beelineDistanceFactor = modeSpecificBeelineDistanceFactor;
         this.network = network;
+        this.klimaTaler = klimaTaler;
     }
 
     @Override
@@ -107,7 +109,7 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
         for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledWalk.entrySet()) {
             Id<Person> person = idDoubleEntry.getKey();
             double emissionsSaved = idDoubleEntry.getValue() * 0.176;
-            double klimaTaler = emissionsSaved / 500 * 10;
+            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForWalk", null, null));
         }
 
@@ -116,14 +118,14 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
             System.out.println(idDoubleEntry.getKey());
             System.out.println(distanceTravelledBike.entrySet());
             double emissionsSaved = idDoubleEntry.getValue() * 0.176;
-            double klimaTaler = emissionsSaved / 500 * 10;
+            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForBike", null, null));
         }
 
         for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledPt.entrySet()) {
             Id<Person> person = idDoubleEntry.getKey();
             double emissionsSaved = idDoubleEntry.getValue() * 0.76;
-            double klimaTaler = emissionsSaved / 500 * 10;
+            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForPt", null, null));
         }
     }
