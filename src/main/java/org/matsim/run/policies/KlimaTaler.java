@@ -1,0 +1,151 @@
+package org.matsim.run.policies;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.events.*;
+import org.matsim.api.core.v01.events.handler.*;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.controler.events.AfterMobsimEvent;
+import org.matsim.core.controler.listener.AfterMobsimListener;
+import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.misc.Time;
+import org.matsim.run.RunGladbeckScenario;
+import org.matsim.vehicles.Vehicle;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEventHandler, AfterMobsimListener, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler, LinkLeaveEventHandler {
+
+    private final Map<Id<Person>, Double> distanceTravelledPt = new HashMap<>();
+    private final Map<Id<Person>, Double> distanceTravelledWalk = new HashMap<>();
+    private final Map<Id<Person>, Double> distanceTravelledBike = new HashMap<>();
+    private Map<Id<Vehicle>, Id<Person>> vehicles2Persons = new HashMap<>();
+    private static final Logger log = LogManager.getLogger(KlimaTaler.class);
+    private final double beelineDistanceFactor;
+    private final Network network;
+    private final double klimaTaler;
+
+    private Map<Id<Person>, Coord> agentDepartureLocations = new HashMap<>();
+
+    public KlimaTaler(double modeSpecificBeelineDistanceFactor, Network network, double klimaTaler) {
+        this.beelineDistanceFactor = modeSpecificBeelineDistanceFactor;
+        this.network = network;
+        this.klimaTaler = klimaTaler;
+    }
+
+    @Override
+    public void handleEvent(PersonArrivalEvent event) {
+        if (event.getLegMode().equals(TransportMode.walk)) {
+            Id<Link> linkId = event.getLinkId();
+            Coord endcoord = network.getLinks().get(linkId).getCoord();
+            Coord startCoord = this.agentDepartureLocations.remove(event.getPersonId());
+
+            if (startCoord != null) {
+                double beelineDistance = CoordUtils.calcEuclideanDistance(startCoord, endcoord);
+                double distance = beelineDistance * beelineDistanceFactor;
+                if (!distanceTravelledWalk.containsKey(event.getPersonId())) {
+                    distanceTravelledWalk.put(event.getPersonId(), distance);
+                } else {
+                    distance = distanceTravelledWalk.get(event.getPersonId()) + distance;
+                    distanceTravelledWalk.replace(event.getPersonId(), distance);
+                }
+            } else log.info("pt walk");
+        }
+    }
+
+    @Override
+    public void handleEvent(PersonDepartureEvent event) {
+        if (event.getLegMode().equals(TransportMode.walk) && !event.getRoutingMode().equals(TransportMode.pt)) {
+            Id<Link> linkId = event.getLinkId();
+            Coord coord = network.getLinks().get(linkId).getCoord();
+            this.agentDepartureLocations.put(event.getPersonId(), coord);
+        }
+
+        if (event.getLegMode().equals(TransportMode.bike) || event.getLegMode().equals("bicycle")) {
+            if (!distanceTravelledBike.containsKey(event.getPersonId())) {
+                distanceTravelledBike.put(event.getPersonId(), 0.0);
+            }
+        }
+
+        if (event.getLegMode().equals(TransportMode.pt)) {
+            if (!distanceTravelledPt.containsKey(event.getPersonId())) {
+                distanceTravelledPt.put(event.getPersonId(), 0.0);
+            }
+        }
+    }
+
+    @Override
+    public void handleEvent(PersonEntersVehicleEvent personEntersVehicleEvent) {
+        //if (distanceTravelledBike.containsKey(personEntersVehicleEvent.getPersonId())) {
+        vehicles2Persons.put(personEntersVehicleEvent.getVehicleId(), personEntersVehicleEvent.getPersonId());
+        //}
+    }
+
+    @Override
+    public void handleEvent(PersonLeavesVehicleEvent personLeavesVehicleEvent) {
+        if (vehicles2Persons.containsKey(personLeavesVehicleEvent.getVehicleId())) {
+            vehicles2Persons.remove(personLeavesVehicleEvent.getVehicleId());
+        }
+    }
+
+    @Override
+    public void reset(int iteration) {
+        this.agentDepartureLocations.clear();
+        this.vehicles2Persons.clear();
+        this.distanceTravelledWalk.clear();
+        this.distanceTravelledPt.clear();
+        this.distanceTravelledBike.clear();
+    }
+
+    @Override
+    public void notifyAfterMobsim(AfterMobsimEvent afterMobsimEvent) {
+        for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledWalk.entrySet()) {
+            Id<Person> person = idDoubleEntry.getKey();
+            double emissionsSaved = idDoubleEntry.getValue() * 0.176;
+            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
+            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForWalk", null, null));
+        }
+
+        for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledBike.entrySet()) {
+            Id<Person> person = idDoubleEntry.getKey();
+            System.out.println(idDoubleEntry.getKey());
+            System.out.println(distanceTravelledBike.entrySet());
+            double emissionsSaved = idDoubleEntry.getValue() * 0.176;
+            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
+            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForBike", null, null));
+        }
+
+        for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledPt.entrySet()) {
+            Id<Person> person = idDoubleEntry.getKey();
+            double emissionsSaved = idDoubleEntry.getValue() * 0.76;
+            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
+            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForPt", null, null));
+        }
+    }
+
+    @Override
+    public void handleEvent(LinkLeaveEvent linkLeaveEvent) {
+        if (vehicles2Persons.containsKey(linkLeaveEvent.getVehicleId())) {
+            Id<Person> personId = vehicles2Persons.get(linkLeaveEvent.getVehicleId());
+            if (distanceTravelledBike.containsKey(personId)) {
+                double linkLength = network.getLinks().get(linkLeaveEvent.getLinkId()).getLength();
+                double distanceTravelled = distanceTravelledBike.get(personId) + linkLength;
+                distanceTravelledBike.replace(personId, distanceTravelled);
+            }
+
+            if (distanceTravelledPt.containsKey(personId)) {
+                double linkLength = network.getLinks().get(linkLeaveEvent.getLinkId()).getLength();
+                double distanceTravelled = distanceTravelledPt.get(personId) + linkLength;
+                distanceTravelledPt.replace(personId, distanceTravelled);
+            }
+        }
+
+    }
+}
