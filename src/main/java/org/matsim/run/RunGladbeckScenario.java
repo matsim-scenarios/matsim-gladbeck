@@ -1,7 +1,5 @@
 package org.matsim.run;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -22,10 +20,11 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignPersonAttributes;
+import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
-import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.run.policies.ReduceSpeed;
+import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 
@@ -34,13 +33,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
-@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class})
+@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class})
 @MATSimApplication.Analysis({NoiseAnalysis.class, AirPollutionByVehicleCategory.class, AirPollutionSpatialAggregation.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	public static final String VERSION = "v1.0";
-
-	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
 	@CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
 	boolean schoolClosure;
