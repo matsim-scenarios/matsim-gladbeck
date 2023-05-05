@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.application.MATSimAppCommand;
 import org.matsim.contrib.bicycle.BicycleUtils;
@@ -18,6 +19,23 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * This class add bike policies to the network. And can be run with the following parameters for example
+ * --in
+ * "shared-svn\projects\GlaMoBi\matsim-input-files\gladbeck-v1.0.network_resolutionHigh-with-pt-with-bike.xml.gz"
+ * --on
+ * "shared-svn\projects\GlaMoBi\matsim-input-files\all-push-and-pull.network.xml.gz"
+ * --shp
+ * "shared-svn\projects\GlaMoBi\data\shp-files\Gladbeck.shp"
+ * --p
+ * SuperSmooth
+ * --p
+ * CyclewayEverywhere
+ * --p
+ * SuperFast
+ * --p
+ * CycleStreets
+ */
 @CommandLine.Command(name = "bicycle-policies")
 public class BicyclePolicies implements MATSimAppCommand {
 
@@ -57,19 +75,25 @@ public class BicyclePolicies implements MATSimAppCommand {
 
 		var network = NetworkUtils.readNetwork(inputNetwork);
 		var filteredNetwork = network.getLinks().values().stream()
+				.filter(link -> !link.getAllowedModes().contains(TransportMode.pt)) // pt links are separate, so this test is sufficient
 				.filter(link -> geoFilter.covers(MGC.coord2Point(link.getFromNode().getCoord())) || geoFilter.covers(MGC.coord2Point(link.getToNode().getCoord())))
 				.collect(NetworkUtils.getCollector());
 
+		// in case one want to execute a combination of the policies the order in which those changes are applied matter
+		// at the moment
 		if (policies.contains(Policy.CycleStreets)) applyCycleStreets(filteredNetwork);
-		if (policies.contains(Policy.SuperFast)) applySuperFast(filteredNetwork);
 		if (policies.contains(Policy.CyclewayEverywhere)) applyCyclewayEverywhere(filteredNetwork, bicycleFreedspeed);
+		if (policies.contains(Policy.SuperFast)) applySuperFast(filteredNetwork);
 		if (policies.contains(Policy.SuperSmooth)) applySuperSmooth(filteredNetwork);
 
-		var mergedNetwork = network.getLinks().values().stream()
-				.map(link -> filteredNetwork.getLinks().containsKey(link.getId()) ? filteredNetwork.getLinks().get(link.getId()) : link)
-				.collect(NetworkUtils.getCollector());
+		for (var link : filteredNetwork.getLinks().values()) {
 
-		NetworkUtils.writeNetwork(mergedNetwork, outputNetwork);
+			// replace links in original network with links from filtered network which we have altered.
+			network.removeLink(link.getId());
+			network.addLink(link);
+		}
+
+		NetworkUtils.writeNetwork(network, outputNetwork);
 
 		return 0;
 	}
@@ -79,9 +103,12 @@ public class BicyclePolicies implements MATSimAppCommand {
 	 */
 	private static void applySuperSmooth(Network network) {
 
+		log.info("Adding tags: cycleway:yes, surface:asphalt, smoothness:excellent to all links in the network");
+
 		for (var link : network.getLinks().values()) {
 			link.getAttributes().putAttribute("cycleway", "yes");
 			link.getAttributes().putAttribute("surface", "asphalt");
+			link.getAttributes().putAttribute("smoothness", "excellent");
 		}
 	}
 
@@ -89,6 +116,8 @@ public class BicyclePolicies implements MATSimAppCommand {
 	 * Change infrastructure speed factor on all streets to double the speed of bicycles
 	 */
 	private static void applySuperFast(Network network) {
+
+		log.info("Adding infrastructure speed factor of 1.0 to all links in the network.");
 
 		for (var link : network.getLinks().values()) {
 			link.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
@@ -100,9 +129,11 @@ public class BicyclePolicies implements MATSimAppCommand {
 	 */
 	private static void applyCyclewayEverywhere(Network network, double bicycleFreedspeed) {
 
+		log.info("Adding cycle ways to all links which were not bicycle ways already.");
+
 		var allowedModes = Set.of(TransportMode.bike);
 		var cycleways = network.getLinks().values().stream()
-				.filter(link -> link.getAllowedModes().size() == 1 && link.getAllowedModes().contains(TransportMode.bike))
+				.filter(link -> !isBicycleOnly(link))
 				.map(link -> {
 					var id = link.getId().toString() + "_cyev";
 					var newLink = network.getFactory().createLink(Id.createLinkId(id), link.getFromNode(), link.getToNode());
@@ -110,6 +141,11 @@ public class BicyclePolicies implements MATSimAppCommand {
 					newLink.getAttributes().putAttribute("cycleway", "yes");
 					newLink.getAttributes().putAttribute("surface", "asphalt");
 					newLink.getAttributes().putAttribute("smoothness", "excellent");
+					newLink.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 0.5);
+
+					var origid = link.getAttributes().getAttribute("origid");
+					origid = origid == null ? "" : origid;
+					newLink.getAttributes().putAttribute("origid", origid);
 
 					newLink.setCapacity(10000);
 					newLink.setFreespeed(bicycleFreedspeed);
@@ -128,10 +164,17 @@ public class BicyclePolicies implements MATSimAppCommand {
 	 */
 	private static void applyCycleStreets(Network network) {
 
+		log.info("Converting all minor streets to cycle only streets");
+
 		var allowedModes = Set.of(TransportMode.bike);
 		network.getLinks().values().stream()
-				.filter(link -> majorRoadTypes.contains((String)link.getAttributes().getAttribute("type")))
+				.filter(link -> link.getAttributes().getAttribute("type") != null)
+				.filter(link -> !majorRoadTypes.contains((String) link.getAttributes().getAttribute("type")))
 				.forEach(link -> link.setAllowedModes(allowedModes));
+	}
+
+	private static boolean isBicycleOnly(Link link) {
+		return link.getAllowedModes().size() == 1 && link.getAllowedModes().contains(TransportMode.bike);
 	}
 
 	enum Policy {
