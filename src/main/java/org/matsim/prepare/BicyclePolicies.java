@@ -58,6 +58,7 @@ public class BicyclePolicies implements MATSimAppCommand {
 	@SuppressWarnings("FieldMayBeFinal")
 	@CommandLine.Option(names = {"--shp"}, required = true)
 	private Path shp;
+
 	public static void main(String[] args) {
 		System.exit(new CommandLine(new BicyclePolicies()).execute(args));
 	}
@@ -67,13 +68,19 @@ public class BicyclePolicies implements MATSimAppCommand {
 
 		log.info(policies.toString());
 
-
 		var geoFilter = ShapeFileReader.getAllFeatures(shp.toString()).stream()
 				.map(f -> (Geometry)f.getDefaultGeometry())
 				.findAny()
 				.orElseThrow();
-
 		var network = NetworkUtils.readNetwork(inputNetwork);
+
+		applyPolicyChanges(network, geoFilter, policies, bicycleFreedspeed);
+
+		NetworkUtils.writeNetwork(network, outputNetwork);
+		return 0;
+	}
+
+	public static void applyPolicyChanges(Network network, Geometry geoFilter, Set<Policy> policies, double bicycleFreedspeed) {
 		var filteredNetwork = network.getLinks().values().stream()
 				.filter(link -> !link.getAllowedModes().contains(TransportMode.pt)) // pt links are separate, so this test is sufficient
 				.filter(link -> geoFilter.covers(MGC.coord2Point(link.getFromNode().getCoord())) || geoFilter.covers(MGC.coord2Point(link.getToNode().getCoord())))
@@ -92,10 +99,6 @@ public class BicyclePolicies implements MATSimAppCommand {
 			network.removeLink(link.getId());
 			network.addLink(link);
 		}
-
-		NetworkUtils.writeNetwork(network, outputNetwork);
-
-		return 0;
 	}
 
 	/**
@@ -177,7 +180,7 @@ public class BicyclePolicies implements MATSimAppCommand {
 		return link.getAllowedModes().size() == 1 && link.getAllowedModes().contains(TransportMode.bike);
 	}
 
-	enum Policy {
+	public enum Policy {
 		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets
 	}
 }

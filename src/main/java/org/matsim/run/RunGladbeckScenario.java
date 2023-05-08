@@ -18,6 +18,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.ScenarioCutOut;
@@ -28,7 +29,9 @@ import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
 @MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class})
@@ -52,6 +55,12 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
 	double klimaTalerMoneyAmount;
 
+	@CommandLine.Option(names = { "--policy", "--p"}, required = true)
+	private Set<BicyclePolicies.Policy> policies = new HashSet<>();
+
+	@CommandLine.Option(names = {"--bicycle-freespeed", "--bf"})
+	private double bicycleFreedspeed = 6.82; // taken from vehicles file in metropole-ruhr-scenario https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.mode-vehicles.xml
+
 	public RunGladbeckScenario() {
 		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
 	}
@@ -62,6 +71,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@Override
 	protected Config prepareConfig(Config config) {
+
+		if (!policies.isEmpty() && !shp.isDefined()) {
+			throw new RuntimeException("A geo filter is required to apply policy changes to the network. Please add a path to a shape file by using the --shp option");
+		}
+
 		// Always switch off intermodal
 		this.intermodal = false;
 
@@ -113,12 +127,14 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
 			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
+
+		if (!policies.isEmpty()) {
+			BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
+		}
 	}
 
 	@Override
 	protected void prepareControler(Controler controler) {
-
-		//controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
 
 		if (klimaTalerMoneyAmount != 0.0) {
 			KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getConfig().plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
@@ -136,6 +152,12 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 				addEventHandlerBinding().toInstance(klimaTaler);
 				addControlerListenerBinding().toInstance(klimaTaler);
 				new PersonMoneyEventsAnalysisModule();
+			}
+		});
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
 			}
 		});
 	}
