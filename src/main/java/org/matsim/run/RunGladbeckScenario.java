@@ -21,6 +21,7 @@ import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.utils.io.IOUtils;
+import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.SchoolRoadsClosure;
@@ -51,6 +52,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
 	private boolean simplePtFlat;
+
+	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
+	boolean cyclingCourse;
 
 	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
 	double klimaTalerMoneyAmount;
@@ -116,6 +120,12 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
 			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
+
+		if (cyclingCourse == true) {
+			log.info("adding diffrent citizenships to the agents");
+			AssignPersonAttributes.assigningDifferentCitizenship(scenario, shp);
+		}
+
 	}
 
 	@Override
@@ -124,6 +134,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		//controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
 
 		if (klimaTalerMoneyAmount != 0.0) {
+			log.info("add Klima taler with money amount: " + klimaTalerMoneyAmount);
 			KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getConfig().plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
 			addKlimaTaler(controler, klimaTaler);
 		}
