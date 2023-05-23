@@ -2,6 +2,7 @@ package org.matsim.prepare;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jaxb.core.v2.TODO;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -145,7 +146,10 @@ public class BicyclePolicies implements MATSimAppCommand {
 					newLink.getAttributes().putAttribute("surface", "asphalt");
 					newLink.getAttributes().putAttribute("smoothness", "excellent");
 					newLink.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 0.5);
-
+					//TODO
+					// this is needed because accessEgressModeToLinkPlusTimeConstant is still active.........
+					NetworkUtils.setLinkEgressTime(newLink, TransportMode.bike, 0.0);
+					NetworkUtils.setLinkAccessTime(newLink, TransportMode.bike, 0.0);
 					var origid = link.getAttributes().getAttribute("origid");
 					origid = origid == null ? "" : origid;
 					newLink.getAttributes().putAttribute("origid", origid);
