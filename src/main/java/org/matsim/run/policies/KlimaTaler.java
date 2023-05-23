@@ -115,8 +115,6 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
 
         for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledBike.entrySet()) {
             Id<Person> person = idDoubleEntry.getKey();
-            System.out.println(idDoubleEntry.getKey());
-            System.out.println(distanceTravelledBike.entrySet());
             double emissionsSaved = idDoubleEntry.getValue() * 0.176;
             double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForBike", null, null));
