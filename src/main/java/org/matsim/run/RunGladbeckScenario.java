@@ -29,6 +29,7 @@ import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +59,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
 	double klimaTalerMoneyAmount;
+
+	//added this for the test
+	public RunGladbeckScenario(@Nullable Config config) {
+		super(config);
+	}
 
 	public RunGladbeckScenario() {
 		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
@@ -95,7 +101,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		if (schoolClosure) {
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-
 			//TODO switch to shp file
 			// Mosaikschule
 			listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
@@ -132,16 +137,13 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected void prepareControler(Controler controler) {
 
 		//controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
-
 		if (klimaTalerMoneyAmount != 0.0) {
 			log.info("add Klima taler with money amount: " + klimaTalerMoneyAmount);
 			KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getConfig().plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
 			addKlimaTaler(controler, klimaTaler);
 		}
-
 		super.prepareControler(controler);
 	}
-
 
 	public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
 		controler.addOverridingModule(new AbstractModule() {
