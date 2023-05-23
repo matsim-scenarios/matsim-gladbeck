@@ -89,6 +89,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		// Always switch off intermodal
 		this.intermodal = false;
 
+
+
 		// so we don´t use the rvr accessEgressModeToLinkPlusTimeConstant
 		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
 
@@ -98,6 +100,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		// this is needed for the school closure case
 		config.network().setTimeVariantNetwork(true);
+
 
 		return super.prepareConfig(config);
 	}
