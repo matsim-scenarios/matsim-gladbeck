@@ -133,6 +133,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             Iterator personIterator = scenario.getPopulation().getPersons().values().iterator();
             while (personIterator.hasNext()) {
                 Person person = (Person) personIterator.next();
+                new FixSubtourModes().run(person);
                 Plan selected = person.getSelectedPlan();
                 Iterator planIterator = Lists.newArrayList(person.getPlans()).iterator();
 
