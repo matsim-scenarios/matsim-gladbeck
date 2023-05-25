@@ -69,7 +69,7 @@ public class TestKlimaTaler {
     public final void runKlimaTalerPtTest() throws IOException {
         String inputPath = String.valueOf(ExamplesUtils.getTestScenarioURL("pt-simple-lineswitch"));
         Config config = ConfigUtils.loadConfig(inputPath + "config.xml");
-        config.controler().setLastIteration(0);
+        config.controler().setLastIteration(100);
         config.controler().setOutputDirectory("output/KlimaTalerPtTest/");
         config.global().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
