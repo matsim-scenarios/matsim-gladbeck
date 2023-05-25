@@ -21,7 +21,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
@@ -64,7 +63,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
 	double klimaTalerMoneyAmount;
 
-    @CommandLine.Option(names = {"--policy", "--p"}, required = false)
+    @CommandLine.Option(names = {"--policy", "--p"})
     private Set<BicyclePolicies.Policy> policies = new HashSet<>();
 
     @CommandLine.Option(names = {"--bicycle-freespeed", "--bf"})
@@ -141,7 +140,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
 
-        if (cyclingCourse == true) {
+        if (cyclingCourse) {
             log.info("adding diffrent citizenships to the agents");
             AssignPersonAttributes.assigningDifferentCitizenship(scenario, shp);
         }
