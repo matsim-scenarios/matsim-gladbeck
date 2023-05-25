@@ -9,13 +9,16 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.application.MATSimAppCommand;
+import org.matsim.application.prepare.network.CleanNetwork;
 import org.matsim.contrib.bicycle.BicycleUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -100,6 +103,10 @@ public class BicyclePolicies implements MATSimAppCommand {
 			network.removeLink(link.getId());
 			network.addLink(link);
 		}
+
+		MultimodalNetworkCleaner multimodalNetworkCleaner = new MultimodalNetworkCleaner(network);
+		multimodalNetworkCleaner.run(Collections.singleton(TransportMode.car));
+		multimodalNetworkCleaner.run(Collections.singleton(TransportMode.bike));
 	}
 
 	/**
@@ -153,7 +160,6 @@ public class BicyclePolicies implements MATSimAppCommand {
 					var origid = link.getAttributes().getAttribute("origid");
 					origid = origid == null ? "" : origid;
 					newLink.getAttributes().putAttribute("origid", origid);
-
 					newLink.setCapacity(10000);
 					newLink.setFreespeed(bicycleFreedspeed);
 					newLink.setAllowedModes(allowedModes);
