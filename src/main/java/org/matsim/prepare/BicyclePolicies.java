@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * SuperFast
  * --p
  * CycleStreets
- */
+ * comment to merge */
 @CommandLine.Command(name = "bicycle-policies")
 public class BicyclePolicies implements MATSimAppCommand {
 
