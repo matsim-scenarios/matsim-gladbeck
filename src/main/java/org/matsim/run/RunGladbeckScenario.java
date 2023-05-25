@@ -26,6 +26,7 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignPersonAttributes;
+import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.SchoolRoadsClosure;
@@ -34,8 +35,7 @@ import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
 @MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class})
@@ -149,33 +149,20 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         if (!policies.isEmpty()) {
             BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
             //delete routes from plans and linkId and facility id from activity
-            Iterator personIterator = scenario.getPopulation().getPersons().values().iterator();
-            while (personIterator.hasNext()) {
-                Person person = (Person) personIterator.next();
-                new FixSubtourModes().run(person);
-                Plan selected = person.getSelectedPlan();
-                Iterator planIterator = Lists.newArrayList(person.getPlans()).iterator();
-
-                while (planIterator.hasNext()) {
-                    Plan plan = (Plan) planIterator.next();
-                    if (plan != selected) {
-                        person.removePlan(plan);
-                    }
-
-                    Iterator planElementIterator = plan.getPlanElements().iterator();
-                    while (planElementIterator.hasNext()) {
-                        PlanElement el = (PlanElement) planElementIterator.next();
-                        if (el instanceof Leg) {
-                            ((Leg) el).setRoute(null);
-                        }
-                        if (el instanceof Activity) {
-                            ((Activity) el).setLinkId(null);
-                            ((Activity) el).setFacilityId(null);
-                        }
-                    }
-                }
-            }
-
+			var fix = new FixSubtourModes();
+			for (var person : scenario.getPopulation().getPersons().values()) {
+				fix.run(person);
+				var plan = person.getSelectedPlan();
+				person.getPlans().clear();
+				PopulationUtils.resetRoutes(plan);
+				for (var element : plan.getPlanElements()) {
+					if (element instanceof Activity act) {
+						act.setFacilityId(null);
+						act.setLinkId(null);
+					}
+				}
+				person.addPlan(plan);
+			}
         }
     }
 
