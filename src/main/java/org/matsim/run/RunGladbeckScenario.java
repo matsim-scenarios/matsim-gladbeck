@@ -1,5 +1,6 @@
 package org.matsim.run;
 
+import com.google.common.collect.Lists;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -20,7 +21,6 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.DeleteRoutesFromPlans;
 import org.matsim.prepare.ScenarioCutOut;
@@ -51,11 +51,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
     @CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
     private boolean simplePtFlat;
 
-	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
-	boolean cyclingCourse;
-
-	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
-	double klimaTalerMoneyAmount;
+    @CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
+    double klimaTalerMoneyAmount;
 
     @CommandLine.Option(names = {"--policy", "--p"}, required = false)
     private Set<BicyclePolicies.Policy> policies = new HashSet<>();
@@ -63,12 +60,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
     @CommandLine.Option(names = {"--bicycle-freespeed", "--bf"})
     private double bicycleFreedspeed = 6.82; // taken from vehicles file in metropole-ruhr-scenario https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.mode-vehicles.xml
 
-	//added this for the test
-	public RunGladbeckScenario(@Nullable Config config) {
-		super(config);
-	}
-
-	public RunGladbeckScenario() {
+    public RunGladbeckScenario() {
         super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
     }
 
@@ -107,43 +99,34 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
             ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
         }
 
-		if (schoolClosure) {
-			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-			//TODO switch to shp file
-			// Mosaikschule
-			listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
-			listOfSchoolLinks.add(Id.createLinkId("5156341260014f"));
-			listOfSchoolLinks.add(Id.createLinkId("380432140001r"));
-			listOfSchoolLinks.add(Id.createLinkId("380432140001f"));
-			listOfSchoolLinks.add(Id.createLinkId("381870670005f"));
-			listOfSchoolLinks.add(Id.createLinkId("381870670005r"));
-			listOfSchoolLinks.add(Id.createLinkId("353353090002f"));
-			listOfSchoolLinks.add(Id.createLinkId("353353090002r"));
-			//  werner von siemens schule gladbeck
-			listOfSchoolLinks.add(Id.createLinkId("358770500002f"));
-			listOfSchoolLinks.add(Id.createLinkId("358770500002r"));
-			listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
-			listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
-			listOfSchoolLinks.add(Id.createLinkId("358770510002f"));
-			listOfSchoolLinks.add(Id.createLinkId("1157881300007f"));
-			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
-			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
-			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
-			listOfSchoolLinks.add(Id.createLinkId("481471120002f"));
-			listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
-			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
-		}
+        if (schoolClosure) {
+            List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
 
-		if (!policies.isEmpty()) {
-			BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
-		}
+            //TODO switch to shp file
+            // Mosaikschule
+            listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
+            listOfSchoolLinks.add(Id.createLinkId("5156341260014f"));
+            listOfSchoolLinks.add(Id.createLinkId("380432140001r"));
+            listOfSchoolLinks.add(Id.createLinkId("380432140001f"));
+            listOfSchoolLinks.add(Id.createLinkId("381870670005f"));
+            listOfSchoolLinks.add(Id.createLinkId("381870670005r"));
+            listOfSchoolLinks.add(Id.createLinkId("353353090002f"));
+            listOfSchoolLinks.add(Id.createLinkId("353353090002r"));
+            //  werner von siemens schule gladbeck
+            listOfSchoolLinks.add(Id.createLinkId("358770500002f"));
+            listOfSchoolLinks.add(Id.createLinkId("358770500002r"));
+            listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
+            listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
+            listOfSchoolLinks.add(Id.createLinkId("358770510002f"));
+            listOfSchoolLinks.add(Id.createLinkId("1157881300007f"));
+            listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+            listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+            listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+            listOfSchoolLinks.add(Id.createLinkId("481471120002f"));
+            listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
+            new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
+        }
 
-		if (cyclingCourse == true) {
-			log.info("adding diffrent citizenships to the agents");
-			AssignPersonAttributes.assigningDifferentCitizenship(scenario, shp);
-		}
-
-	}
         if (!policies.isEmpty()) {
             BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
             //delete routes from plans and linkId and facility id from activity
@@ -180,29 +163,29 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
     @Override
     protected void prepareControler(Controler controler) {
 
-		//controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
-		if (klimaTalerMoneyAmount != 0.0) {
-			log.info("add Klima taler with money amount: " + klimaTalerMoneyAmount);
-			KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getConfig().plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
-			addKlimaTaler(controler, klimaTaler);
-		}
-		super.prepareControler(controler);
-	}
+        if (klimaTalerMoneyAmount != 0.0) {
+            KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getConfig().plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
+            addKlimaTaler(controler, klimaTaler);
+        }
 
-	public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
-		controler.addOverridingModule(new AbstractModule() {
-			@Override
-			public void install() {
-				addEventHandlerBinding().toInstance(klimaTaler);
-				addControlerListenerBinding().toInstance(klimaTaler);
-				new PersonMoneyEventsAnalysisModule();
-			}
-		});
-		controler.addOverridingModule(new AbstractModule() {
-			@Override
-			public void install() {
-				bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
-			}
-		});
-	}
+        super.prepareControler(controler);
+    }
+
+    // this is public because i use it in the test
+    public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addEventHandlerBinding().toInstance(klimaTaler);
+                addControlerListenerBinding().toInstance(klimaTaler);
+                new PersonMoneyEventsAnalysisModule();
+            }
+        });
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
+            }
+        });
+    }
 }
