@@ -101,7 +101,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		// this is needed for the school closure case
 		config.network().setTimeVariantNetwork(true);
-
 		return super.prepareConfig(config);
 	}
 
@@ -148,9 +147,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         if (!policies.isEmpty()) {
             BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
             //delete routes from plans and linkId and facility id from activity
-			var fix = new FixSubtourModes();
 			for (var person : scenario.getPopulation().getPersons().values()) {
-				fix.run(person);
 				var plan = person.getSelectedPlan();
 				person.getPlans().clear();
 				PopulationUtils.resetRoutes(plan);

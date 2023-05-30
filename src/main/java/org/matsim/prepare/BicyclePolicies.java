@@ -107,6 +107,7 @@ public class BicyclePolicies implements MATSimAppCommand {
 		MultimodalNetworkCleaner multimodalNetworkCleaner = new MultimodalNetworkCleaner(network);
 		multimodalNetworkCleaner.run(Collections.singleton(TransportMode.car));
 		multimodalNetworkCleaner.run(Collections.singleton(TransportMode.bike));
+		multimodalNetworkCleaner.run(Collections.singleton(TransportMode.ride));
 	}
 
 	/**
