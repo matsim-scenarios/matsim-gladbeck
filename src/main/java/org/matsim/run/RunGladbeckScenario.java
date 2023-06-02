@@ -145,6 +145,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         }
 
         if (!policies.isEmpty()) {
+			//changing the network for the policy
             BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
             //delete routes from plans and linkId and facility id from activity
 			for (var person : scenario.getPopulation().getPersons().values()) {

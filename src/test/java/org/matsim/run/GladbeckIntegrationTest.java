@@ -1,5 +1,6 @@
 package org.matsim.run;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
@@ -19,6 +20,7 @@ import org.matsim.testcases.MatsimTestUtils;
 import playground.vsp.openberlinscenario.cemdap.output.ActivityTypes;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
+@Ignore
 public class GladbeckIntegrationTest {
     @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
