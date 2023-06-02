@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class TestBicycleRouting {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");

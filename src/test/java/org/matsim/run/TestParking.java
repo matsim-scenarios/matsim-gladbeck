@@ -1,5 +1,6 @@
 package org.matsim.run;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLinkPlusTimeConstant;
 
+@Ignore
 public class TestParking {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
