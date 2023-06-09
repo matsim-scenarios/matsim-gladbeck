@@ -25,6 +25,9 @@ public class SchoolRoadsClosure {
             }
         }
 
+        // IDEE: Abfrage für Links mit permlanes>1 ... bei diesen dann nur permlanes=permlanes-1 (oder optional permlanes>1 AND "primary road" oder so ähnlich...)
+
+
         NetworkChangeEvent networkChangeEvent = new NetworkChangeEvent(Time.convertHHMMInteger(startTime));
         // add all the links
         networkChangeEvent.addLinks(links);

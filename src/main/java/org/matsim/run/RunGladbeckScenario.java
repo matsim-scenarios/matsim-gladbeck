@@ -26,6 +26,7 @@ import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
+import org.matsim.prepare.LinksInShp;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.SchoolRoadsClosure;
@@ -113,8 +114,16 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
 		if (schoolClosure) {
+			String inputNetworkFile = "C:/Users/djp/Desktop/TUB/VSP/glamobi/bc-continued/baseCaseContinued.output_network.xml.gz";
+//			String inputShpFile = "C:/Users/djp/Desktop/TUB/VSP/glamobi/gladbeck_schulstr_shp/gladbeck_schulstr.shp"; // all schools
+			String inputShpFile = "C:/Users/djp/Desktop/TUB/VSP/glamobi/gladbeck_schulstr_reduced/gladbeck_schulstr_reduced.shp"; // Mosaikschule 2x und Werner-von-Siemens RS
+			String outputCsvFile = "C:/Users/djp/Desktop/TUB/VSP/glamobi/gladbeck_schulstr_shp/gladbeck_schulstr_reduced_links_car.csv"; // name depending on case
+
+//			List<Id<Link>> listOfSchoolLinks = new LinksInShp(inputNetworkFile, inputShpFile, outputCsvFile).getLinkIds();
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-			//TODO switch to shp file
+
+
+/*			// switch to shp file
 			// Mosaikschule
 			listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
 			listOfSchoolLinks.add(Id.createLinkId("5156341260014f"));
@@ -136,6 +145,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
 			listOfSchoolLinks.add(Id.createLinkId("481471120002f"));
 			listOfSchoolLinks.add(Id.createLinkId("481471120002r"));
+			*/
 			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
 
