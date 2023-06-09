@@ -109,21 +109,21 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
         for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledWalk.entrySet()) {
             Id<Person> person = idDoubleEntry.getKey();
             double emissionsSaved = idDoubleEntry.getValue() * 0.176;
-            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
+            double klimaTaler = emissionsSaved / 5000 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForWalk", null, null));
         }
 
         for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledBike.entrySet()) {
             Id<Person> person = idDoubleEntry.getKey();
             double emissionsSaved = idDoubleEntry.getValue() * 0.176;
-            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
+            double klimaTaler = emissionsSaved / 5000 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForBike", null, null));
         }
 
         for (Map.Entry<Id<Person>, Double> idDoubleEntry : distanceTravelledPt.entrySet()) {
             Id<Person> person = idDoubleEntry.getKey();
-            double emissionsSaved = idDoubleEntry.getValue() * 0.76;
-            double klimaTaler = emissionsSaved / 500 * this.klimaTaler;
+            double emissionsSaved = idDoubleEntry.getValue() * 0.076;
+            double klimaTaler = emissionsSaved / 5000 * this.klimaTaler;
             afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, klimaTaler, "klimaTalerForPt", null, null));
         }
     }

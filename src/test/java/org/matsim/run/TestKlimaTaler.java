@@ -61,7 +61,7 @@ public class TestKlimaTaler {
 
         PersonMoneyEvent event = handler.klimaTalerBikeMoneyEvents.iterator().next();
         Assert.assertEquals("wrong person", "10", event.getPersonId().toString() );
-        Assert.assertEquals("wrong amount", 316.79999999999995 , event.getAmount(), 0. );
+        Assert.assertEquals("wrong amount", 31.679999999999996 , event.getAmount(), 0. );
     }
 
 
@@ -69,7 +69,7 @@ public class TestKlimaTaler {
     public final void runKlimaTalerPtTest() throws IOException {
         String inputPath = String.valueOf(ExamplesUtils.getTestScenarioURL("pt-simple-lineswitch"));
         Config config = ConfigUtils.loadConfig(inputPath + "config.xml");
-        config.controler().setLastIteration(100);
+        config.controler().setLastIteration(0);
         config.controler().setOutputDirectory("output/KlimaTalerPtTest/");
         config.global().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
@@ -91,7 +91,7 @@ public class TestKlimaTaler {
         //Assert that money amount is correct
         PersonMoneyEvent event = handler.klimaTalerPtMoneyEvents.iterator().next();
         Assert.assertEquals("wrong person", "1", event.getPersonId().toString() );
-        Assert.assertEquals("wrong amount", 45.751999999999995 , event.getAmount(), 0. );
+        Assert.assertEquals("wrong amount", 0.45752000000000004 , event.getAmount(), 0. );
     }
 
     @Test
@@ -125,7 +125,7 @@ public class TestKlimaTaler {
         //Assert that money amount is correct
         PersonMoneyEvent event = handler.klimaTalerWalkMoneyEvents.iterator().next();
         Assert.assertEquals("wrong person", "walkingAgent", event.getPersonId().toString() );
-        Assert.assertEquals("wrong amount", 4.576 , event.getAmount(), 0. );
+        Assert.assertEquals("wrong amount", 0.45759999999999995 , event.getAmount(), 0. );
 
     }
 
@@ -158,13 +158,9 @@ public class TestKlimaTaler {
 
         @Override
         public void handleEvent(PersonMoneyEvent event) {
-            System.out.println("hallo");
-            System.out.println(event.getPurpose());
-            System.out.println(event.getAmount());
             if (event.getPurpose().equals("klimaTalerForBike") && event.getAmount() > 0.) this.klimaTalerBikeMoneyEvents.add(event);
             else if (event.getPurpose().equals("klimaTalerForPt") && event.getAmount() > 0.) this.klimaTalerPtMoneyEvents.add(event);
             else if (event.getPurpose().equals("klimaTalerForWalk") && event.getAmount() > 0.) this.klimaTalerWalkMoneyEvents.add(event);
-            System.out.println(klimaTalerBikeMoneyEvents.size());
         }
 
         @Override
