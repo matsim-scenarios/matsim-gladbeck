@@ -21,7 +21,7 @@ import org.matsim.vehicles.Vehicle;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEventHandler, AfterMobsimListener, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler, LinkLeaveEventHandler {
+public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEventHandler, AfterMobsimListener, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler, LinkLeaveEventHandler, VehicleLeavesTrafficEventHandler {
 
     private final Map<Id<Person>, Double> distanceTravelledPt = new HashMap<>();
     private final Map<Id<Person>, Double> distanceTravelledWalk = new HashMap<>();
@@ -145,5 +145,23 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
             }
         }
 
+    }
+
+    @Override
+    public void handleEvent(VehicleLeavesTrafficEvent vehicleLeavesTrafficEvent) {
+        if (vehicles2Persons.containsKey(vehicleLeavesTrafficEvent.getVehicleId())) {
+            Id<Person> personId = vehicles2Persons.get(vehicleLeavesTrafficEvent.getVehicleId());
+            if (distanceTravelledBike.containsKey(personId)) {
+                double linkLength = network.getLinks().get(vehicleLeavesTrafficEvent.getLinkId()).getLength();
+                double distanceTravelled = distanceTravelledBike.get(personId) + linkLength;
+                distanceTravelledBike.replace(personId, distanceTravelled);
+            }
+
+            if (distanceTravelledPt.containsKey(personId)) {
+                double linkLength = network.getLinks().get(vehicleLeavesTrafficEvent.getLinkId()).getLength();
+                double distanceTravelled = distanceTravelledPt.get(personId) + linkLength;
+                distanceTravelledPt.replace(personId, distanceTravelled);
+            }
+        }
     }
 }
