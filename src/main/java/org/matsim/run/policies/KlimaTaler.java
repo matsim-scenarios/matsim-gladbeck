@@ -56,7 +56,7 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
                     distance = distanceTravelledWalk.get(event.getPersonId()) + distance;
                     distanceTravelledWalk.replace(event.getPersonId(), distance);
                 }
-            } else log.info("pt walk");
+            }
         }
     }
 
