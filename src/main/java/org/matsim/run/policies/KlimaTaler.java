@@ -45,9 +45,7 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
         if (event.getLegMode().equals(TransportMode.walk)) {
             Id<Link> linkId = event.getLinkId();
             Coord endcoord = network.getLinks().get(linkId).getCoord();
-            Coord startCoord = this.agentDepartureLocations.remove(event.getPersonId());
-
-            if (startCoord != null) {
+            Coord startCoord = this.agentDepartureLocations.get(event.getPersonId());
                 double beelineDistance = CoordUtils.calcEuclideanDistance(startCoord, endcoord);
                 double distance = beelineDistance * beelineDistanceFactor;
                 if (!distanceTravelledWalk.containsKey(event.getPersonId())) {
@@ -56,25 +54,31 @@ public class KlimaTaler implements PersonDepartureEventHandler, PersonArrivalEve
                     distance = distanceTravelledWalk.get(event.getPersonId()) + distance;
                     distanceTravelledWalk.replace(event.getPersonId(), distance);
                 }
-            }
         }
+
     }
 
     @Override
     public void handleEvent(PersonDepartureEvent event) {
-        if (event.getLegMode().equals(TransportMode.walk) && !event.getRoutingMode().equals(TransportMode.pt)) {
+        if (event.getRoutingMode().equals(TransportMode.walk)) {
             Id<Link> linkId = event.getLinkId();
             Coord coord = network.getLinks().get(linkId).getCoord();
             this.agentDepartureLocations.put(event.getPersonId(), coord);
         }
 
-        if (event.getLegMode().equals(TransportMode.bike) || event.getLegMode().equals("bicycle")) {
+        if (event.getRoutingMode().equals(TransportMode.pt)) {
+            Id<Link> linkId = event.getLinkId();
+            Coord coord = network.getLinks().get(linkId).getCoord();
+            this.agentDepartureLocations.put(event.getPersonId(), coord);
+        }
+
+        if (event.getRoutingMode().equals(TransportMode.bike) || event.getRoutingMode().equals("bicycle")) {
             if (!distanceTravelledBike.containsKey(event.getPersonId())) {
                 distanceTravelledBike.put(event.getPersonId(), 0.0);
             }
         }
 
-        if (event.getLegMode().equals(TransportMode.pt)) {
+        if (event.getRoutingMode().equals(TransportMode.pt)) {
             if (!distanceTravelledPt.containsKey(event.getPersonId())) {
                 distanceTravelledPt.put(event.getPersonId(), 0.0);
             }
