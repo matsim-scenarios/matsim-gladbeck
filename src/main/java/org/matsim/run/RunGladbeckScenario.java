@@ -7,7 +7,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.population.Activity;
 import org.matsim.application.MATSimApplication;
 import org.matsim.application.analysis.emissions.AirPollutionByVehicleCategory;
 import org.matsim.application.analysis.emissions.AirPollutionSpatialAggregation;
@@ -28,13 +28,15 @@ import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
-import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.run.policies.ReduceSpeed;
+import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
-
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
 @MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class})
