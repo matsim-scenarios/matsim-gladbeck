@@ -28,8 +28,7 @@ public class KlimaTaler implements PersonDepartureEventHandler,
         PersonEntersVehicleEventHandler,
         PersonLeavesVehicleEventHandler,
         LinkLeaveEventHandler,
-        ActivityStartEventHandler,
-        VehicleLeavesTrafficEventHandler {
+        ActivityStartEventHandler {
 
     private final Map<Id<Person>, Double> distanceTravelledWalk = new HashMap<>();
     private final Map<Id<Person>, Double> distanceTravelledBike = new HashMap<>();
@@ -67,7 +66,6 @@ public class KlimaTaler implements PersonDepartureEventHandler,
                 }
             }
         }
-
     }
 
     @Override
@@ -147,18 +145,7 @@ public class KlimaTaler implements PersonDepartureEventHandler,
 
     }
 
-    @Override
-    public void handleEvent(VehicleLeavesTrafficEvent vehicleLeavesTrafficEvent) {
-        if (vehicles2Persons.containsKey(vehicleLeavesTrafficEvent.getVehicleId())) {
-            Id<Person> personId = vehicles2Persons.get(vehicleLeavesTrafficEvent.getVehicleId());
-            if (distanceTravelledBike.containsKey(personId)) {
-                double linkLength = network.getLinks().get(vehicleLeavesTrafficEvent.getLinkId()).getLength();
-                double distanceTravelled = distanceTravelledBike.get(personId) + linkLength;
-                distanceTravelledBike.replace(personId, distanceTravelled);
-            }
 
-        }
-    }
 
 
     @Override

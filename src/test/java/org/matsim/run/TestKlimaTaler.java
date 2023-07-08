@@ -62,7 +62,6 @@ public class TestKlimaTaler {
         });
         controler.run();
 
-
         PersonMoneyEvent event = handler.klimaTalerBikeMoneyEvents.iterator().next();
         Assert.assertEquals("wrong person", "10", event.getPersonId().toString() );
         Assert.assertEquals("wrong amount", 31.679999999999996 , event.getAmount(), 0. );
