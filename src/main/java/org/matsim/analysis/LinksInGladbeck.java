@@ -53,8 +53,8 @@ public class LinksInGladbeck {
 
         List<PreparedGeometry> gladbeckGeoms = ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(gladbeckShape));
         Network gladbeckNetwork = NetworkUtils.readNetwork("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.network.xml.gz");
-        //writeLinksInShpCSV(gladbeckNetwork, gladbeckGeoms, "../../shared-svn/projects/GlaMoBi/networkLinksWithinGladbeck.tsv");
-        writeTempo30Zones(gladbeckNetwork, gladbeckGeoms,"../../shared-svn/projects/GlaMoBi/tempo30WithinGladbeck.tsv");
+        writeLinksInShpCSV(gladbeckNetwork, gladbeckGeoms, "../../shared-svn/projects/GlaMoBi/networkLinksWithinGladbeckWithAttributes.tsv");
+        //writeTempo30Zones(gladbeckNetwork, gladbeckGeoms,"../../shared-svn/projects/GlaMoBi/tempo30WithinGladbeck.tsv");
     }
 
     static void writeLinksInShpCSV(Network network, List<PreparedGeometry> preparedGeometryList, String outputFilePath){
@@ -62,7 +62,8 @@ public class LinksInGladbeck {
 
         Set<String[]> linkIds = network.getLinks().values().stream()
                 .filter(link -> ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), preparedGeometryList))
-                .map(link -> new String[]{link.getId().toString()})
+                .map(link -> new String[]{link.getId().toString()+","+link.getAttributes().getAttribute("smoothness").toString()
+                +","+link.getAttributes().getAttribute("surface")})
                 .collect(Collectors.toSet());
 
         try {

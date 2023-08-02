@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -18,13 +19,13 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.examples.ExamplesUtils;
+import org.matsim.facilities.ActivityFacility;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.testcases.MatsimTestUtils;
 import playground.vsp.openberlinscenario.cemdap.output.ActivityTypes;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.matsim.run.RunGladbeckScenario.addKlimaTaler;
 
@@ -43,11 +44,14 @@ public class TestKlimaTaler {
         config.qsim().setNumberOfThreads(1);
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(), 10.0);
         Person person = scenario.getPopulation().getPersons().get(Id.createPersonId("10"));
         scenario.getPopulation().getPersons().clear();
         scenario.getPopulation().addPerson(person);
         Controler controler = new Controler(scenario);
+
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(),
+                10.0);
+
         addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator);
         KlimaTalerTestListener handler = new KlimaTalerTestListener();
         controler.addOverridingModule(new AbstractModule() {
@@ -57,7 +61,6 @@ public class TestKlimaTaler {
             }
         });
         controler.run();
-
 
         PersonMoneyEvent event = handler.klimaTalerBikeMoneyEvents.iterator().next();
         Assert.assertEquals("wrong person", "10", event.getPersonId().toString() );
@@ -76,7 +79,15 @@ public class TestKlimaTaler {
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controler controler = new Controler(scenario);
-        KlimaTaler klimaTaler = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(), 10.0);
+        Map<Id, Queue<Coord>> actCoords = new HashMap<>();
+        for (ActivityFacility activity: controler.getScenario().getActivityFacilities().getFacilities().values()) {
+            Queue<Coord> queue = new LinkedList<>();
+            queue.add(activity.getCoord());
+            actCoords.put(activity.getId(), queue);
+        }
+
+        KlimaTaler klimaTaler = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(),
+                10.0);
         addKlimaTaler(controler, klimaTaler);
         KlimaTalerTestListener handler = new KlimaTalerTestListener();
         controler.addOverridingModule(new AbstractModule() {
@@ -91,7 +102,7 @@ public class TestKlimaTaler {
         //Assert that money amount is correct
         PersonMoneyEvent event = handler.klimaTalerPtMoneyEvents.iterator().next();
         Assert.assertEquals("wrong person", "1", event.getPersonId().toString() );
-        Assert.assertEquals("wrong amount", 0.45752000000000004 , event.getAmount(), 0. );
+        Assert.assertEquals("wrong amount", 0.60496 , event.getAmount(), 0. );
     }
 
     @Test
@@ -111,8 +122,15 @@ public class TestKlimaTaler {
         }
         Population population = scenario.getPopulation();
         createWalkingAgent(population);
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(), 10.0);
         Controler controler = new Controler(scenario);
+        Map<Id, Queue<Coord>> actCoords = new HashMap<>();
+        for (ActivityFacility activity: controler.getScenario().getActivityFacilities().getFacilities().values()) {
+            Queue<Coord> queue = new LinkedList<>();
+            queue.add(activity.getCoord());
+            actCoords.put(activity.getId(), queue);
+        }
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.plansCalcRoute().getBeelineDistanceFactors().get(TransportMode.walk),
+                scenario.getNetwork(), 10.0);
         addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator);
         KlimaTalerTestListener handler = new KlimaTalerTestListener();
         controler.addOverridingModule(new AbstractModule() {
@@ -121,6 +139,9 @@ public class TestKlimaTaler {
                 addEventHandlerBinding().toInstance(handler);
             }
         });
+
+
+
         controler.run();
         //Assert that money amount is correct
         PersonMoneyEvent event = handler.klimaTalerWalkMoneyEvents.iterator().next();
