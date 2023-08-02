@@ -187,11 +187,24 @@ public class BicyclePolicies implements MATSimAppCommand {
 				.forEach(link -> link.setAllowedModes(allowedModes));
 	}
 
+	private static void applyCyclewayEverywhereAndReduceCapacity(Network network, double bicycleFreedspeed) {
+		//first create cycling ways
+		applyCyclewayEverywhere(network, bicycleFreedspeed);
+		// reduce capacity on every link that is not a cycling way
+		network.getLinks().values().stream()
+				.filter(link -> !isBicycleOnly(link))
+				.forEach(link -> {
+					link.setCapacity(link.getCapacity()*0.5);
+					link.setNumberOfLanes(link.getNumberOfLanes()-1);
+						}
+				);
+	}
+
 	private static boolean isBicycleOnly(Link link) {
 		return link.getAllowedModes().size() == 1 && link.getAllowedModes().contains(TransportMode.bike);
 	}
 
 	public enum Policy {
-		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets
+		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets, CyclewayEverywhereAndReduceCapacity
 	}
 }
