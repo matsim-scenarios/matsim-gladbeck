@@ -194,8 +194,8 @@ public class BicyclePolicies implements MATSimAppCommand {
 		network.getLinks().values().stream()
 				.filter(link -> !isBicycleOnly(link))
 				.forEach(link -> {
-					link.setCapacity(link.getCapacity()*0.5);
-					link.setNumberOfLanes(link.getNumberOfLanes()-1);
+					link.setCapacity(link.getCapacity() * 0.5);
+					link.setNumberOfLanes(link.getNumberOfLanes() * 0.5);
 						}
 				);
 	}
