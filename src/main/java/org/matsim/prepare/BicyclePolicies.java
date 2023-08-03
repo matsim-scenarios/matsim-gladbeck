@@ -93,12 +93,12 @@ public class BicyclePolicies implements MATSimAppCommand {
 		// in case one want to execute a combination of the policies the order in which those changes are applied matter
 		// at the moment
 		if (policies.contains(Policy.CycleStreets)) applyCycleStreets(filteredNetwork);
+		if (policies.contains(Policy.CyclewayEverywhereAndReduceCapacity)) applyCyclewayEverywhereAndReduceCapacity(filteredNetwork, bicycleFreedspeed);
 		if (policies.contains(Policy.CyclewayEverywhere)) applyCyclewayEverywhere(filteredNetwork, bicycleFreedspeed);
 		if (policies.contains(Policy.SuperFast)) applySuperFast(filteredNetwork);
 		if (policies.contains(Policy.SuperSmooth)) applySuperSmooth(filteredNetwork);
 
 		for (var link : filteredNetwork.getLinks().values()) {
-
 			// replace links in original network with links from filtered network which we have altered.
 			network.removeLink(link.getId());
 			network.addLink(link);
