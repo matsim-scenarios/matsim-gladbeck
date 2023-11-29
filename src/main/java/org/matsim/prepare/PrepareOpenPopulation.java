@@ -11,6 +11,7 @@ import picocli.CommandLine;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 @CommandLine.Command(
         name = "open-population",
@@ -62,14 +63,34 @@ public class PrepareOpenPopulation implements MATSimAppCommand {
         // Activities with type "other" were added synthetically, these coordinates are not copied
         List<Activity> activities = TripStructureUtils.getActivities(sourcePerson.getSelectedPlan(), TripStructureUtils.StageActivityHandling.ExcludeStageActivities);
 
+        Optional<Activity> homeAct = activities.stream().filter(act -> act.getType().startsWith("home")).findFirst();
+
         for (Plan plan : targetPerson.getPlans()) {
 
             List<Activity> targetActs = TripStructureUtils.getActivities(plan, TripStructureUtils.StageActivityHandling.ExcludeStageActivities);
 
             int toActivityCounter = 0;
-            for (int fromActivityCounter = 0; fromActivityCounter < activities.size(); fromActivityCounter++) {
-                Activity fromActivity = activities.get(fromActivityCounter);
+            for (int fromActivityCounter = 0; toActivityCounter < targetActs.size(); fromActivityCounter++) {
+
                 Activity toActivity = targetActs.get(toActivityCounter);
+                if (fromActivityCounter >= activities.size()) {
+
+                    if (homeAct.isEmpty() || !toActivity.getType().startsWith("home")) {
+                        throw new IllegalStateException("No home activity found as last activity");
+                    }
+
+                    toActivity.setCoord(homeAct.get().getCoord());
+                    toActivityCounter++;
+                    continue;
+                }
+
+                Activity fromActivity = activities.get(fromActivityCounter);
+
+                // If both other, counters can just be incremented
+                if (fromActivity.getType().startsWith("other") && toActivity.getType().startsWith("other")) {
+                    toActivityCounter++;
+                    continue;
+                }
 
                 // Skip other and the second part of the actual activity (which are both not present in the target)
                 if (fromActivity.getType().startsWith("other")) {
@@ -79,8 +100,12 @@ public class PrepareOpenPopulation implements MATSimAppCommand {
 
                 if (toActivity.getType().startsWith("other")) {
                     Activity secondOccurrenceOfLastFromActivity = targetActs.get(toActivityCounter + 1);
-                    secondOccurrenceOfLastFromActivity.setCoord(activities.get(fromActivityCounter - 1).getCoord());
+                    Activity previousActivity = activities.get(fromActivityCounter - 1);
 
+                    secondOccurrenceOfLastFromActivity.setCoord(previousActivity.getCoord());
+
+                    // Same from activity is used again
+                    fromActivityCounter -= 1;
                     toActivityCounter += 2;
                     continue;
                 }
