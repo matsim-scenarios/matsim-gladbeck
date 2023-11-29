@@ -43,7 +43,7 @@ import java.util.Set;
 @MATSimApplication.Analysis({NoiseAnalysis.class, AirPollutionByVehicleCategory.class, AirPollutionSpatialAggregation.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
-	public static final String VERSION = "v1.3";
+	public static final String VERSION = "v1.1";
 
 	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
