@@ -1,6 +1,6 @@
 
 JAR := matsim-gladbeck-*.jar
-V := v1.0
+V := v2.0
 CRS := EPSG:25832
 
 $(JAR):
@@ -11,8 +11,7 @@ NETWORK := ../public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-
 SHAPE := scenarios/study-area-utm.shp
 export JAVA_TOOL_OPTIONS := -Xmx50G -Xms50G
 
-scenarios/input/gladbeck-$V-25pct.plans.xml.gz:
-
+scenarios/gladbeck-$V/input/gladbeck-$V-25pct.plans.xml.gz:
 	java -jar $(JAR) prepare scenario-cutout\
 		--input $(POPULATION)\
 		--network $(NETWORK)\
@@ -33,8 +32,14 @@ scenarios/input/gladbeck-$V-25pct.plans.xml.gz:
 		 --sample-size 0.25\
 		 --samples 0.1 0.01
 
-scenarios/input/gladbeck-$V-homes.csv: scenarios/input/gladbeck-$V-25pct.plans.xml.gz
+scenarios/gladbeck-$V/input/gladbeck-$V-10pct.open-plans-initial.xml.gz:
+	java -jar $(JAR) prepare open-population\
+	 --open-population ../../shared-svn/projects/matsim-metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.4-25pct.open-plans.xml.gz\
+     --calibrated-population ../../shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.3-10pct.plans-cleaned.xml.gz\
+     --output $@
+
+scenarios/gladbeck-$V/input/gladbeck-$V-homes.csv: scenarios/gladbeck-$V/input/gladbeck-$V-25pct.plans.xml.gz
 	java -jar $(JAR) prepare extract-home-coordinates $< --csv $@
 
-prepare: scenarios/input/gladbeck-$V-25pct.plans.xml.gz scenarios/input/gladbeck-$V-homes.csv
+prepare: scenarios/gladbeck-$V/input/gladbeck-$V-25pct.plans.xml.gz scenarios/gladbeck-$V/input/gladbeck-$V-homes.csv
 	echo "Done"

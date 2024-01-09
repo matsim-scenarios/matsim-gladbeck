@@ -26,6 +26,7 @@ import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
+import org.matsim.prepare.PrepareOpenPopulation;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.ReduceSpeed;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
-@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class})
+@MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class, PrepareOpenPopulation.class})
 @MATSimApplication.Analysis({NoiseAnalysis.class, AirPollutionByVehicleCategory.class, AirPollutionSpatialAggregation.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 

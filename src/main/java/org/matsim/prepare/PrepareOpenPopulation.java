@@ -1,10 +1,9 @@
 package org.matsim.prepare;
 
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
-import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.population.*;
 import org.matsim.application.MATSimAppCommand;
+import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.TripStructureUtils;
 import picocli.CommandLine;
@@ -49,6 +48,9 @@ public class PrepareOpenPopulation implements MATSimAppCommand {
             // Copy coordinates from the open person to target person
             prepare(person, openPerson);
         }
+
+        // Re-calculates home coordinates
+        calibratedPopulation.getPersons().values().forEach(PrepareOpenPopulation::setHomeCoordinate);
 
         PopulationUtils.writePopulation(calibratedPopulation, output.toString());
 
@@ -117,4 +119,31 @@ public class PrepareOpenPopulation implements MATSimAppCommand {
             TripStructureUtils.getLegs(plan).forEach(leg -> leg.setRoute(null));
         }
     }
+
+    /**
+     * Can be removed in new MATSim version.
+     * @see ExtractHomeCoordinates
+     */
+    private static void setHomeCoordinate(Person person) {
+
+        outer:
+        for (Plan plan : person.getPlans()) {
+            for (PlanElement planElement : plan.getPlanElements()) {
+                if (planElement instanceof Activity) {
+                    String actType = ((Activity) planElement).getType();
+                    if (actType.startsWith("home")) {
+                        Coord homeCoord = ((Activity) planElement).getCoord();
+
+                        person.getAttributes().putAttribute("home_x", homeCoord.getX());
+                        person.getAttributes().putAttribute("home_y", homeCoord.getY());
+
+                        break outer;
+                    }
+                }
+            }
+
+        }
+
+    }
+
 }
