@@ -40,9 +40,9 @@ public class GladbeckIntegrationTest {
         Person bikePerson = PopulationUtils.getFactory().createPerson(Id.createPersonId("bikePerson"));
         Person walkPerson = PopulationUtils.getFactory().createPerson(Id.createPersonId("walkPerson"));
 
-        walkPerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
-        carPerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
-        bikePerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+        //walkPerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+        //carPerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+        //bikePerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
 
         PopulationFactory factory = population.getFactory();
         Leg carLeg = factory.createLeg(TransportMode.car);

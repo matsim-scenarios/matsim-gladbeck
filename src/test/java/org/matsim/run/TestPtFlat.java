@@ -83,7 +83,7 @@ public class TestPtFlat {
             var person = factory.createPerson(personId);
             person.addPlan(plan);
             person.getAttributes().putAttribute("subpopulation", "person");
-            person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+            //person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
             scenario.getPopulation().addPerson(person);
             super.prepareScenario(scenario);
 

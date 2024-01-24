@@ -42,7 +42,6 @@ import org.matsim.contrib.emissions.events.WarmEmissionEvent;
 import org.matsim.contrib.emissions.events.WarmEmissionEventHandler;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup.DetailedVsAverageLookupBehavior;
-import org.matsim.contrib.emissions.utils.EmissionsConfigGroup.HbefaRoadTypeSource;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup.NonScenarioVehicles;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -149,7 +148,7 @@ public class AirPollutionByVehicleCategory implements MATSimAppCommand {
         eConfig.setDetailedVsAverageLookupBehavior(lookupBehavior);
         eConfig.setAverageColdEmissionFactorsFile(this.hbefaColdFile.toString());
         eConfig.setAverageWarmEmissionFactorsFile(this.hbefaWarmFile.toString());
-        eConfig.setHbefaRoadTypeSource(HbefaRoadTypeSource.fromLinkAttributes);
+        //eConfig.setHbefaRoadTypeSource(HbefaRoadTypeSource.fromLinkAttributes);
         eConfig.setNonScenarioVehicles(NonScenarioVehicles.ignore);
 
         final String eventsFile = globFile(runDirectory, runId, "events");
