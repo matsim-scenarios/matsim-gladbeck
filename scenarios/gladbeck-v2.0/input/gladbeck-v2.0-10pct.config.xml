@@ -408,7 +408,7 @@
         <!-- If greater than 0, subtours will also consider coordinates to be at the same location when smaller than set distance. -->
         <param name="coordDistance" value="0.0" />
         <!-- Defines all the modes available, including chain-based modes, seperated by commas -->
-        <param name="modes" value="car,ride,pt,bike,walk" />
+        <param name="modes" value="car,pt,bike,walk" />
         <!-- Defines the probability of changing a single trip for a unchained mode instead of subtour. -->
         <param name="probaForRandomSingleTripMode" value="0.5" />
     </module>
