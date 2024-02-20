@@ -44,7 +44,7 @@ import java.util.Set;
 @MATSimApplication.Analysis({NoiseAnalysis.class, AirPollutionByVehicleCategory.class, AirPollutionSpatialAggregation.class})
 public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
-	public static final String VERSION = "v1.1";
+	public static final String VERSION = "v2.0";
 
 	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
@@ -143,7 +143,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		}
 
         if (cyclingCourse) {
-            log.info("adding different citizenships to the agents");
+            log.info("adding different citizenship's to the agents");
             AssignPersonAttributes.assigningDifferentCitizenship(scenario, shp);
         }
 
