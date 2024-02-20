@@ -78,7 +78,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
     }
 
 	public RunGladbeckScenario() {
-		super(String.format("./scenarios/gladbeck-v1.0/input/gladbeck-%s-10pct.config.xml", VERSION));
+		super(String.format("./scenarios/gladbeck-v2.0/input/gladbeck-%s-10pct.config.xml", VERSION));
 	}
 
 	public static void main(String[] args) {

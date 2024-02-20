@@ -96,6 +96,7 @@ public class BicyclePolicies implements MATSimAppCommand {
 		if (policies.contains(Policy.CyclewayEverywhere)) applyCyclewayEverywhere(filteredNetwork, bicycleFreedspeed);
 		if (policies.contains(Policy.SuperFast)) applySuperFast(filteredNetwork);
 		if (policies.contains(Policy.SuperSmooth)) applySuperSmooth(filteredNetwork);
+		if (policies.contains(Policy.EBikeCity)) applyEBikeCity(filteredNetwork);
 
 		for (var link : filteredNetwork.getLinks().values()) {
 
@@ -135,6 +136,25 @@ public class BicyclePolicies implements MATSimAppCommand {
 			link.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
 		}
 	}
+
+	/**
+	 * Change infrastructure speed factor on all streets to double the speed of bicycles and half the capacity
+	 */
+	private static void applyEBikeCity(Network network) {
+
+		log.info("Adding infrastructure speed factor of 1.0 to all links in the network.");
+
+		for (var link : network.getLinks().values()) {
+			link.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
+			if (link.getAllowedModes().contains(TransportMode.car)) {
+				link.setCapacity(link.getCapacity() * 0.5);
+				if (link.getNumberOfLanes() > 2.0) {
+					link.setNumberOfLanes(link.getNumberOfLanes() * 0.5);
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * add a bicycle link next to each link in case it in not a bike only link anyway.
@@ -192,6 +212,6 @@ public class BicyclePolicies implements MATSimAppCommand {
 	}
 
 	public enum Policy {
-		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets
+		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets, EBikeCity
 	}
 }
