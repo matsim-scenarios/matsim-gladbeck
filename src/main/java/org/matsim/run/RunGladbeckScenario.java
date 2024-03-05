@@ -54,6 +54,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
 	boolean tempo30Zone;
 
+	@CommandLine.Option(names = "--tempo30Streets", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
+	boolean tempo30Streets;
+
 	@CommandLine.Mixin
 	private ShpOptions shp;
 
@@ -114,6 +117,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		if (tempo30Zone) {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
+
+		if (tempo30Streets) {
+			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
+		}
+
 
 		if (schoolClosure) {
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
