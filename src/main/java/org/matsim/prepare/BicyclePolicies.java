@@ -151,8 +151,28 @@ public class BicyclePolicies implements MATSimAppCommand {
 				if (link.getNumberOfLanes() > 2.0) {
 					link.setNumberOfLanes(link.getNumberOfLanes() * 0.5);
 				}
+				var id = link.getId().toString() + "_cyev";
+				var newLink = network.getFactory().createLink(Id.createLinkId(id), link.getFromNode(), link.getToNode());
+				newLink.getAttributes().putAttribute("type", "cycleway");
+				newLink.getAttributes().putAttribute("cycleway", "yes");
+				newLink.getAttributes().putAttribute("surface", "asphalt");
+				newLink.getAttributes().putAttribute("smoothness", "excellent");
+				newLink.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
+				NetworkUtils.setLinkEgressTime(newLink, TransportMode.bike, 0.0);
+				NetworkUtils.setLinkAccessTime(newLink, TransportMode.bike, 0.0);
+				var origid = link.getAttributes().getAttribute("origid");
+				origid = origid == null ? "" : origid;
+				newLink.getAttributes().putAttribute("origid", origid);
+				newLink.setCapacity(10000);
+				//default value
+				newLink.setFreespeed(6.82);
+				newLink.setAllowedModes(Collections.singleton(TransportMode.bike));
+				network.addLink(newLink);
+
 			}
 		}
+
+
 	}
 
 

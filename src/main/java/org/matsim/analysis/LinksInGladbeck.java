@@ -49,11 +49,11 @@ public class LinksInGladbeck {
 
     public static void main(String[] args) {
 
-        String gladbeckShape = "../../shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp";
+        String gladbeckShape = "/Users/gregorr/Documents/work/respos/shared-svn/projects/NaMAV/data/shapefiles/leipzig_stadt/Leipzig_stadt.shp";
 
         List<PreparedGeometry> gladbeckGeoms = ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(gladbeckShape));
-        Network gladbeckNetwork = NetworkUtils.readNetwork("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.network.xml.gz");
-        writeLinksInShpCSV(gladbeckNetwork, gladbeckGeoms, "../../shared-svn/projects/GlaMoBi/networkLinksWithinGladbeckWithAttributes.tsv");
+        Network gladbeckNetwork = NetworkUtils.readNetwork("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/leipzig/leipzig-v1.3/input/leipzig-v1.3-network-with-pt.xml.gz");
+        writeLinksInShpCSV(gladbeckNetwork, gladbeckGeoms, "/Users/gregorr/Documents/work/respos/shared-svn/projects/NaMAV/data/networkLinksWithinLeipzigWithAttributes.tsv");
         //writeTempo30Zones(gladbeckNetwork, gladbeckGeoms,"../../shared-svn/projects/GlaMoBi/tempo30WithinGladbeck.tsv");
     }
 
@@ -62,8 +62,7 @@ public class LinksInGladbeck {
 
         Set<String[]> linkIds = network.getLinks().values().stream()
                 .filter(link -> ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), preparedGeometryList))
-                .map(link -> new String[]{link.getId().toString()+","+link.getAttributes().getAttribute("smoothness").toString()
-                +","+link.getAttributes().getAttribute("surface")})
+                .map(link -> new String[]{link.getId().toString()})
                 .collect(Collectors.toSet());
 
         try {
