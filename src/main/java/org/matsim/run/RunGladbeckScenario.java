@@ -52,16 +52,16 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	boolean schoolClosure;
 
 	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
-	boolean tempo30Zone;
+	boolean slowSpeedZone;
 
 	@CommandLine.Option(names = "--tempo30Streets", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
-	boolean tempo30Streets;
+	boolean slowSpeedOnDefinedLinks;
 
 	@CommandLine.Mixin
 	private ShpOptions shp;
 
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
-	private boolean simplePtFlat;
+	boolean simplePtFlat;
 
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
 	boolean cyclingCourse;
@@ -114,11 +114,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected void prepareScenario(Scenario scenario) {
 		super.prepareScenario(scenario);
 
-		if (tempo30Zone) {
+		if (slowSpeedZone) {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
 
-		if (tempo30Streets) {
+		if (slowSpeedOnDefinedLinks) {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
 

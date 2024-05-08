@@ -164,7 +164,7 @@ public class BicyclePolicies implements MATSimAppCommand {
 				origid = origid == null ? "" : origid;
 				newLink.getAttributes().putAttribute("origid", origid);
 				newLink.setCapacity(10000);
-				//default value
+				//default value of cyclist
 				newLink.setFreespeed(6.82);
 				newLink.setAllowedModes(Collections.singleton(TransportMode.bike));
 				network.addLink(newLink);
