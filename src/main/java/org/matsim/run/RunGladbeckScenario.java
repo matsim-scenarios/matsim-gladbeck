@@ -8,7 +8,9 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.application.MATSimApplication;
+import org.matsim.application.analysis.HomeLocationFilter;
 import org.matsim.application.analysis.emissions.AirPollutionByVehicleCategory;
 import org.matsim.application.analysis.emissions.AirPollutionSpatialAggregation;
 import org.matsim.application.analysis.noise.NoiseAnalysis;
@@ -21,6 +23,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
@@ -29,15 +32,13 @@ import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.PrepareOpenPopulation;
 import org.matsim.prepare.ScenarioCutOut;
 import org.matsim.run.policies.KlimaTaler;
+import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
 @MATSimApplication.Prepare({ScenarioCutOut.class, DownSamplePopulation.class, FixSubtourModes.class, XYToLinks.class, ExtractHomeCoordinates.class, BicyclePolicies.class, PrepareOpenPopulation.class})
@@ -51,17 +52,20 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
 	boolean schoolClosure;
 
-	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
+	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h in a zone")
 	boolean slowSpeedZone;
 
-	@CommandLine.Option(names = "--tempo30Streets", defaultValue = "false", description = "measures to reduce car speed to 30 km/h")
+	@CommandLine.Option(names = "--tempo30Streets", defaultValue = "false", description = "measures to reduce car speed to 30 km/h on links definded by a shape file")
 	boolean slowSpeedOnDefinedLinks;
 
 	@CommandLine.Mixin
 	private ShpOptions shp;
 
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
-	boolean simplePtFlat;
+	boolean scenarioWidePtFlat;
+
+	@CommandLine.Option(names = "--PtFlat", defaultValue = "false", description = "measures to allow 40 people to have free pt")
+	boolean ptFlat;
 
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
 	boolean cyclingCourse;
@@ -101,7 +105,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		// so we don´t use the rvr accessEgressModeToLinkPlusTimeConstant
 		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
 
-		if (simplePtFlat) {
+		if (scenarioWidePtFlat) {
 			config.planCalcScore().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
 		}
 
@@ -114,6 +118,20 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	protected void prepareScenario(Scenario scenario) {
 		super.prepareScenario(scenario);
 
+		// 40 people were provided with free pt tickets
+		if (ptFlat) {
+			List<Id<Person>> personsEligibleForPtFlatrate = new ArrayList<>();
+			for (int ii = 0; ii >40 ; ii++) {
+				Random generator = MatsimRandom.getRandom();
+				Object[] values = scenario.getPopulation().getPersons().values().toArray();
+				Id<Person> randomPerson = (Id<Person>) values[generator.nextInt(values.length)];
+				HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, scenario.getConfig().global().getCoordinateSystem(), scenario.getPopulation());
+				if (homeLocationFilter.test(scenario.getPopulation().getPersons().get(randomPerson)) == true) {
+					personsEligibleForPtFlatrate.add(randomPerson);
+				}
+			}
+		}
+
 		if (slowSpeedZone) {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
@@ -121,7 +139,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 		if (slowSpeedOnDefinedLinks) {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
-
 
 		if (schoolClosure) {
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
@@ -190,6 +207,13 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
                 bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
             }
         });
+
+
+		if (ptFlat) {
+			addPtFlat(controler, new PtFlatrate(personsEligibleForPtFlatrate, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
+
+
+		}
 		super.prepareControler(controler);
 	}
 
@@ -199,6 +223,17 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			public void install() {
 				addEventHandlerBinding().toInstance(klimaTaler);
 				addControlerListenerBinding().toInstance(klimaTaler);
+				new PersonMoneyEventsAnalysisModule();
+			}
+		});
+	}
+
+	public static void addPtFlat(Controler controler, PtFlatrate ptFlatrate) {
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				addEventHandlerBinding().toInstance(ptFlatrate);
+				addControlerListenerBinding().toInstance(ptFlatrate);
 				new PersonMoneyEventsAnalysisModule();
 			}
 		});
