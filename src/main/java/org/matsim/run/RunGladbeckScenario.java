@@ -64,7 +64,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
 	boolean scenarioWidePtFlat;
 
-	@CommandLine.Option(names = "--PtFlat", defaultValue = "false", description = "measures to allow 40 people to have free pt")
+	@CommandLine.Option(names = "--ptFlat", defaultValue = "false", description = "measures to allow 40 people to have free pt")
 	boolean ptFlat;
 
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
@@ -120,16 +120,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		// 40 people were provided with free pt tickets
 		if (ptFlat) {
-			List<Id<Person>> personsEligibleForPtFlatrate = new ArrayList<>();
-			for (int ii = 0; ii >40 ; ii++) {
-				Random generator = MatsimRandom.getRandom();
-				Object[] values = scenario.getPopulation().getPersons().values().toArray();
-				Id<Person> randomPerson = (Id<Person>) values[generator.nextInt(values.length)];
-				HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, scenario.getConfig().global().getCoordinateSystem(), scenario.getPopulation());
-				if (homeLocationFilter.test(scenario.getPopulation().getPersons().get(randomPerson)) == true) {
-					personsEligibleForPtFlatrate.add(randomPerson);
-				}
-			}
+
 		}
 
 		if (slowSpeedZone) {
@@ -210,8 +201,18 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 
 		if (ptFlat) {
-			addPtFlat(controler, new PtFlatrate(personsEligibleForPtFlatrate, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
 
+			List<Id<Person>> personsEligibleForPtFlatrate = new ArrayList<>();
+			while (personsEligibleForPtFlatrate.size() != 40) {
+				Random generator = MatsimRandom.getRandom();
+				Object[] values = controler.getScenario().getPopulation().getPersons().values().toArray();
+                var randomPerson = (Person) values[generator.nextInt(values.length)];
+				HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, controler.getScenario().getConfig().global().getCoordinateSystem(), controler.getScenario().getPopulation());
+                if (homeLocationFilter.test(controler.getScenario().getPopulation().getPersons().get(randomPerson.getId()))) {
+                    personsEligibleForPtFlatrate.add(randomPerson.getId());
+                }
+            }
+			addPtFlat(controler, new PtFlatrate(personsEligibleForPtFlatrate, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
 
 		}
 		super.prepareControler(controler);
