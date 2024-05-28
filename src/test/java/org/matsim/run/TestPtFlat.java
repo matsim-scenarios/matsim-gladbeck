@@ -18,11 +18,11 @@ import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParamete
 
 import static org.junit.Assert.assertTrue;
 
-@Ignore
+
 public class TestPtFlat {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
-    private static final String inputNetworkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.network_resolutionHigh-with-pt.xml.gz";
+    private static final String inputNetworkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.network.xml.gz";
 
     @Rule
     public MatsimTestUtils testUtils = new MatsimTestUtils();
@@ -32,15 +32,15 @@ public class TestPtFlat {
 
         var outputDir = testUtils.getOutputDirectory();
 
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--simplePtFlat=true", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--simplePtFlat=false", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--simplePtFlat=true", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--simplePtFlat=false", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
 
         // load output of both runs
         var scenarioWithPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithPtFlat).readFile(outputDir + "withPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
         var scenarioWithoutPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithoutPtFlat).readFile(outputDir + "withoutPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
-        // somehow compare the two routes
+        // somehow compare the two plans
         var personWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
         var personWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
 
@@ -70,14 +70,14 @@ public class TestPtFlat {
             var factory = scenario.getPopulation().getFactory();
             var plan = factory.createPlan();
             var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65711")).getCoord();
-            var home = factory.createActivityFromCoord("home_600.0", homeCoord);
+            var home = factory.createActivityFromCoord("home_600", homeCoord);
             home.setEndTime(50400);
             plan.addActivity(home);
             var leg = factory.createLeg(TransportMode.pt);
             leg.setMode(TransportMode.pt);
             plan.addLeg(leg);
             var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65377")).getCoord();
-            var other = factory.createActivityFromCoord("other_3600.0",otherCoord);
+            var other = factory.createActivityFromCoord("other_3600",otherCoord);
             other.setEndTime(54000);
             plan.addActivity(other);
             var person = factory.createPerson(personId);
