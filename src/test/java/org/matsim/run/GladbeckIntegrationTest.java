@@ -20,7 +20,7 @@ import org.matsim.testcases.MatsimTestUtils;
 import playground.vsp.openberlinscenario.cemdap.output.ActivityTypes;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
-@Ignore
+
 public class GladbeckIntegrationTest {
     @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
