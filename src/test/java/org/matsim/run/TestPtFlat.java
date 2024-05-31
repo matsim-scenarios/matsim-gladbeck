@@ -32,8 +32,14 @@ public class TestPtFlat {
 
         var outputDir = testUtils.getOutputDirectory();
 
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--simplePtFlat=true", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--simplePtFlat=false", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--ptFlat", "1", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile,
+                "--shp", "/Users/gregorr/Documents/work/respos/shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp",
+                "--shp-crs", "EPSG:25832"
+        );
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile,
+                "--shp", "/Users/gregorr/Documents/work/respos/shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp",
+                "--shp-crs", "EPSG:25832"
+                );
 
         // load output of both runs
         var scenarioWithPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
@@ -54,8 +60,8 @@ public class TestPtFlat {
         @Override
         public Config prepareConfig(Config config) {
             Config preparedConfig = super.prepareConfig(config);
-            preparedConfig.global().setNumberOfThreads(1);
-            preparedConfig.qsim().setNumberOfThreads(1);
+            //preparedConfig.global().setNumberOfThreads(1);
+            //preparedConfig.qsim().setNumberOfThreads(1);
             preparedConfig.plans().setInputFile(null);
             preparedConfig.controler().setLastIteration(0);
             preparedConfig.controler().setRunId(RUN_ID);
@@ -66,7 +72,7 @@ public class TestPtFlat {
         protected void prepareScenario(Scenario scenario) {
             // Other agents are not needed for the test
             scenario.getPopulation().getPersons().clear();
-            // add single person with two activities
+            // add single person with two activities living outside gladbeck
             var factory = scenario.getPopulation().getFactory();
             var plan = factory.createPlan();
             var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65711")).getCoord();
@@ -84,6 +90,25 @@ public class TestPtFlat {
             person.addPlan(plan);
             person.getAttributes().putAttribute("subpopulation", "person");
             person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+
+            // add single person with two activities living inside gladbeck
+            var planInsider = factory.createPlan();
+            var homeCoordInsider = scenario.getNetwork().getLinks().get(Id.createLinkId("pt_65455")).getCoord();
+            var homeInsider = factory.createActivityFromCoord("home_600", homeCoordInsider);
+            homeInsider.setEndTime(50400);
+            planInsider.addActivity(homeInsider);
+            var legInsider = factory.createLeg(TransportMode.pt);
+            legInsider.setMode(TransportMode.pt);
+            planInsider.addLeg(legInsider);
+            var otherCoordInsider = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65377")).getCoord();
+            var otherInsider = factory.createActivityFromCoord("other_3600",otherCoordInsider);
+            otherInsider.setEndTime(54000);
+            planInsider.addActivity(otherInsider);
+            var personInsider = factory.createPerson(Id.createPersonId(personId+"inside"));
+            personInsider.addPlan(planInsider);
+            personInsider.getAttributes().putAttribute("subpopulation", "person");
+            personInsider.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+            scenario.getPopulation().addPerson(personInsider);
             scenario.getPopulation().addPerson(person);
             super.prepareScenario(scenario);
 

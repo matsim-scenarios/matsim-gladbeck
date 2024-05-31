@@ -36,8 +36,12 @@ import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
+import org.matsim.vehicles.Vehicle;
 import picocli.CommandLine;
 import javax.annotation.Nullable;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
@@ -64,8 +68,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
 	boolean scenarioWidePtFlat;
 
-	@CommandLine.Option(names = "--ptFlat", defaultValue = "false", description = "measures to allow 40 people to have free pt")
-	boolean ptFlat;
+	@CommandLine.Option(names = "--ptFlat", defaultValue = "0", description = "measures to allow people in Gladbeck to have free pt, if set to zero no agent will have free pt")
+	int ptFlat;
 
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
 	boolean cyclingCourse;
@@ -117,11 +121,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@Override
 	protected void prepareScenario(Scenario scenario) {
 		super.prepareScenario(scenario);
-
-		// 40 people were provided with free pt tickets
-		if (ptFlat) {
-
-		}
 
 		if (slowSpeedZone) {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
@@ -200,10 +199,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         });
 
 
-		if (ptFlat) {
+		if (ptFlat !=0) {
 
-			List<Id<Person>> personsEligibleForPtFlatrate = new ArrayList<>();
-			while (personsEligibleForPtFlatrate.size() != 40) {
+            List<Id<Person>> personsEligibleForPtFlatrate = new ArrayList<>();
+			for (int ii= 0; ii < ptFlat; ii++) {
 				Random generator = MatsimRandom.getRandom();
 				Object[] values = controler.getScenario().getPopulation().getPersons().values().toArray();
                 var randomPerson = (Person) values[generator.nextInt(values.length)];
@@ -212,7 +211,13 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
                     personsEligibleForPtFlatrate.add(randomPerson.getId());
                 }
             }
-			addPtFlat(controler, new PtFlatrate(personsEligibleForPtFlatrate, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
+			log.info("adding pt flat." + personsEligibleForPtFlatrate.size() +" agents will pay no pt cost");
+            try {
+                writeOutAgents(personsEligibleForPtFlatrate);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            addPtFlat(controler, new PtFlatrate(personsEligibleForPtFlatrate, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
 
 		}
 		super.prepareControler(controler);
@@ -238,5 +243,18 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 				new PersonMoneyEventsAnalysisModule();
 			}
 		});
+	}
+
+	private static void writeOutAgents(List<Id<Person>> listOfIds) throws IOException {
+		BufferedWriter writer = IOUtils.getBufferedWriter("agentsWithFreePt.tsv");
+
+		writer.write("Id");
+		writer.newLine();
+		for (int i = 0; i < listOfIds.size(); i++) {
+			// split String to get person Id from vehicle Id
+			writer.write( listOfIds.get(i).toString());
+			writer.newLine();
+		}
+		writer.close();
 	}
 }
