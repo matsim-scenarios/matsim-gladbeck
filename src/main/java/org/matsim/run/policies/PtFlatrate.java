@@ -37,7 +37,8 @@ public class PtFlatrate implements PersonDepartureEventHandler, AfterMobsimListe
     @Override
     public void notifyAfterMobsim(AfterMobsimEvent afterMobsimEvent) {
         for (Id person: currentIterationForPtFlatrate) {
-            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, ptDailyMonetaryConstant, "ptFlat",null, null ));
+            // multiplied by -1 to throw positiv person money event
+            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, (-1) *   ptDailyMonetaryConstant, "ptFlat",null, null ));
         }
     }
 

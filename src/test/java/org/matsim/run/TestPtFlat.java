@@ -47,11 +47,18 @@ public class TestPtFlat {
         var scenarioWithoutPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithoutPtFlat).readFile(outputDir + "withoutPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
         // somehow compare the two plans
-        var personWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
-        var personWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
+        var unaffectedAgentScenario1 = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
+        var unaffectedAgentScenario2 = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
 
-        assertTrue(personWithPtFlat.getSelectedPlan().getScore() > personWithoutPtFlat.getSelectedPlan().getScore());
+        assertTrue(unaffectedAgentScenario1.getSelectedPlan().getScore().equals(unaffectedAgentScenario2.getSelectedPlan().getScore()));
 
+        System.out.printf(scenarioWithPtFlat.getPopulation().getPersons().toString() + "\n");
+        var agentWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(Id.createPersonId(personId+"inside"));
+        var agentWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(Id.createPersonId(personId+"inside"));
+
+
+
+        assertTrue(agentWithPtFlat.getSelectedPlan().getScore() > agentWithoutPtFlat.getSelectedPlan().getScore());
     }
 
     public static class TestApplication extends RunGladbeckScenario {
