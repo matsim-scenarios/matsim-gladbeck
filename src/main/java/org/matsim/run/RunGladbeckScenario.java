@@ -36,12 +36,10 @@ import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
-import org.matsim.vehicles.Vehicle;
 import picocli.CommandLine;
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 
 @CommandLine.Command(header = ":: Gladbeck Scenario ::", version = RunGladbeckScenario.VERSION)
@@ -70,6 +68,9 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	@CommandLine.Option(names = "--ptFlat", defaultValue = "0", description = "measures to allow people in Gladbeck to have free pt, if set to zero no agent will have free pt")
 	int ptFlat;
+
+	@CommandLine.Option(names = "--cityWidePtFlat", defaultValue = "false", description = "measures to allow every resident in Gladbeck to have free pt")
+	boolean cityWidePtFlat;
 
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
 	boolean cyclingCourse;
@@ -199,25 +200,37 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         });
 
 
-		if (ptFlat !=0) {
+		if (ptFlat !=0 || cityWidePtFlat) {
 
-            List<Id<Person>> personsEligibleForPtFlatrate = new ArrayList<>();
-			for (int ii= 0; ii < ptFlat; ii++) {
-				Random generator = MatsimRandom.getRandom();
-				Object[] values = controler.getScenario().getPopulation().getPersons().values().toArray();
-                var randomPerson = (Person) values[generator.nextInt(values.length)];
-				HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, controler.getScenario().getConfig().global().getCoordinateSystem(), controler.getScenario().getPopulation());
-                if (homeLocationFilter.test(controler.getScenario().getPopulation().getPersons().get(randomPerson.getId()))) {
-                    personsEligibleForPtFlatrate.add(randomPerson.getId());
-                }
-            }
-			log.info("adding pt flat." + personsEligibleForPtFlatrate.size() +" agents will pay no pt cost");
+            List<Id<Person>> agentsLivingInGladbeck = new ArrayList<>();
+			List<Id<Person>> agentsWithPtFlat = new ArrayList<>();
+			HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, controler.getScenario().getConfig().global().getCoordinateSystem(), controler.getScenario().getPopulation());
+
+			for (Person person: controler.getScenario().getPopulation().getPersons().values())  {
+				if (homeLocationFilter.test(controler.getScenario().getPopulation().getPersons().get(person.getId()))) {
+					agentsLivingInGladbeck.add(person.getId());
+				}
+			}
+
+
+			if (cityWidePtFlat) {
+				agentsWithPtFlat.addAll(agentsLivingInGladbeck);
+			} else {
+				for (int ii= 0; ii < ptFlat; ii++) {
+					Random generator = MatsimRandom.getRandom();
+					Object[] values = agentsLivingInGladbeck.toArray();
+					var randomPerson = (Id<Person>) values[generator.nextInt(values.length)];
+					agentsWithPtFlat.add(randomPerson);
+					agentsLivingInGladbeck.remove(randomPerson);
+				}
+			}
+			log.info("adding pt flat." + agentsWithPtFlat.size() +" agents will pay no pt cost");
             try {
-                writeOutAgents(personsEligibleForPtFlatrate);
+                writeOutAgents(agentsWithPtFlat);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            addPtFlat(controler, new PtFlatrate(personsEligibleForPtFlatrate, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
+            addPtFlat(controler, new PtFlatrate(agentsWithPtFlat, controler.getConfig().planCalcScore().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
 
 		}
 		super.prepareControler(controler);
@@ -250,11 +263,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		writer.write("Id");
 		writer.newLine();
-		for (int i = 0; i < listOfIds.size(); i++) {
-			// split String to get person Id from vehicle Id
-			writer.write( listOfIds.get(i).toString());
-			writer.newLine();
-		}
+        for (Id<Person> listOfId : listOfIds) {
+            writer.write(listOfId.toString());
+            writer.newLine();
+        }
 		writer.close();
 	}
 }
