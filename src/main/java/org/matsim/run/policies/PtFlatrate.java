@@ -10,45 +10,41 @@ import org.matsim.core.controler.events.AfterMobsimEvent;
 import org.matsim.core.controler.listener.AfterMobsimListener;
 import org.matsim.core.utils.misc.Time;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PtFlatrate implements PersonDepartureEventHandler, AfterMobsimListener {
 
-    private final Map<Id<Person>, Integer> personsEligibleForPtFiltrate;
-    private final Map<Id<Person>, Integer> currentIterationForPtFlatrate = new HashMap<>();
-    private final double ptConstant;
+    private final List<Id<Person>> personsEligibleForPtFlatrate;
+    private final List<Id<Person>> currentIterationForPtFlatrate = new ArrayList<>();
     private  final double ptDailyMonetaryConstant;
 
-    public PtFlatrate(Map<Id<Person>, Integer> personsEligibleForPtFiltrate, double ptConstant, double ptDailyMonetaryConstant) {
-        this.personsEligibleForPtFiltrate = personsEligibleForPtFiltrate;
-        this.ptConstant = ptConstant;
+    public PtFlatrate(List<Id<Person>> personsEligibleForPtFlatrate, double ptDailyMonetaryConstant) {
+        this.personsEligibleForPtFlatrate = personsEligibleForPtFlatrate;
         this.ptDailyMonetaryConstant = ptDailyMonetaryConstant;
     }
 
     @Override
     public void handleEvent(PersonDepartureEvent personDepartureEvent) {
-        if (currentIterationForPtFlatrate.containsKey(personDepartureEvent.getPersonId())
+        if (currentIterationForPtFlatrate.contains(personDepartureEvent.getPersonId())
                 && personDepartureEvent.getLegMode().equals(TransportMode.pt)) {
-            int numberOfPtTrips =  currentIterationForPtFlatrate.get(personDepartureEvent.getPersonId());
-            numberOfPtTrips++;
-            currentIterationForPtFlatrate.replace(personDepartureEvent.getPersonId(),numberOfPtTrips);
+            currentIterationForPtFlatrate.add(personDepartureEvent.getPersonId());
         }
     }
 
     @Override
     public void notifyAfterMobsim(AfterMobsimEvent afterMobsimEvent) {
-        for (Map.Entry<Id<Person>, Integer> idDoubleEntry : currentIterationForPtFlatrate.entrySet()) {
-            Id<Person> person = idDoubleEntry.getKey();
-            Integer numberOfPtTrips = idDoubleEntry.getValue();
-            double ptFlat = numberOfPtTrips * ptConstant + ptDailyMonetaryConstant;
-            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, ptFlat, "ptFlat",null, null ));
+        for (Id person: currentIterationForPtFlatrate) {
+            // multiplied by -1 to throw positiv person money event
+            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(Time.MIDNIGHT, person, (-1) *   ptDailyMonetaryConstant, "ptFlat",null, null ));
         }
     }
 
     @Override
     public void reset(int iteration) {
         currentIterationForPtFlatrate.clear();
-        currentIterationForPtFlatrate.putAll(personsEligibleForPtFiltrate);
+        currentIterationForPtFlatrate.addAll(personsEligibleForPtFlatrate);
     }
 }
