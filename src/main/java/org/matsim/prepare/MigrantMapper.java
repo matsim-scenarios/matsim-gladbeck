@@ -7,6 +7,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.application.options.ShpOptions;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 
@@ -85,6 +86,9 @@ public class MigrantMapper {
         double destProbability = 0.;    //P(M|Z) Wahrscheinlichkeit, dass p ein Migrant ist unter Beruecksichtigung der Zielaktivitaeten TODO
 
         //Age-Gender Probability
+        //https://www.bpb.de/kurz-knapp/zahlen-und-fakten/soziale-situation-in-deutschland/150599/bevoelkerung-mit-migrationshintergrund-nach-alter/
+        //https://de.statista.com/statistik/daten/studie/452165/umfrage/asylbewerber-in-deutschland-nach-geschlecht-innerhalb-altersgruppen/
+        //Data of age and gender was combined into one probability table
         if(gender.equals("m")){
             if(age < 18){
                 ageProbability = 0.2;
@@ -112,6 +116,7 @@ public class MigrantMapper {
         }
 
         //Income Probability
+        //https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Migration-Integration/Tabellen/migrationshintergrund-nettoeinkommen.html
         if (income == 0.) {
             incomeProbability = 0.4109;
         } else if (income < 500){
@@ -133,9 +138,12 @@ public class MigrantMapper {
         }
 
         //RegionProbability
+        //From given data in shared-svn
+        //Location of the camps: https://stadt-gladbeck.de/Rathaus_Politik/Dokumente/angebots-bersicht_august2019.pdf (Chapter 1.6.1)
+        //TODO Not all "Übergangsheime" are listed in this document
         if(region != null){
             regionProbability = switch (region) {
-                case "Übergangsheim" -> 10; //TODO
+                case "Übergangsheim" -> 10; //Using 1000% as probability to make sure that all agents in this camp will be marked as migrants
                 case "Mitte I" -> 0.2246;
                 case "Mitte II" -> 0.1460;
                 case "Zweckel" -> 0.1327;
@@ -155,16 +163,19 @@ public class MigrantMapper {
 
         //Probability summary
         //TODO Create an actual stochastic procedure
+        //Giving regionProbability 3-times the weight because it is the most reliable and important value
         if(destProbability != -1) return (incomeProbability + ageProbability + 3*regionProbability + destProbability) / 6;
         return (incomeProbability + ageProbability + 3*regionProbability) / 5;
     }
 
     /**
-     * CHecks if any of the agents activities is next to an important social facility.
+     * Checks if any of the agents activities is next to an important social facility.
      * @return The probability of this agent being a migrant using activities as hints
      */
     private double checkIfActivitiesAreRelevant(Person p){
         //TODO Make this more useful
+        //This was the ground structure for the osm-activity-tracking, it uses some of the facility mentioned in this document:
+        //https://stadt-gladbeck.de/Rathaus_Politik/Dokumente/angebots-bersicht_august2019.pdf
         Location[] locations = new Location[]{
                 new Location("Büro für Interkulturelle Arbeit", new Coord(361436.57,5712850.89), 0.5),
                 new Location("Jugendmigrationsdienst", new Coord(367983.90,5708550.07), 0.5),
@@ -177,7 +188,7 @@ public class MigrantMapper {
         for(PlanElement a : p.getSelectedPlan().getPlanElements()){
             if(a instanceof Activity){
                 for(Location l : locations){
-                    if(NetworkUtils.getEuclideanDistance(((Activity) a).getCoord(), l.coord) < 50){
+                    if(NetworkUtils.getEuclideanDistance(((Activity) a).getCoord(), l.coord) < 50){ //TODO Remove annoying z-coord warnings
                         probabilities.add(l.migrantProbability);
                     }
                 }
@@ -200,7 +211,7 @@ public class MigrantMapper {
      */
     private void assignMigrantMapToPopulation(){
         int totalMigrants = 0;
-        Random rand = new Random();
+        Random rand = MatsimRandom.getRandom();
         for(var e : migrantProbabilityMap.entrySet()){
             double r = e.getValue();
             boolean isMigrant = rand.nextInt(1000) < r*1000;
@@ -239,11 +250,7 @@ public class MigrantMapper {
         System.out.println(detecter.district_amounts);
         System.out.println(detecter.district_migrant_amounts);
 
-        //TODO MATSIM Random
-
-        //DEBUG
-
-        /*Ergebnisse 1
+        /*Ergebnisse 1 (veraltet)
         Mitte I: 182 ~> 1820 vgl. 2670 (
         Mitte II: 143 ~> 1430 vgl. 1122
         Zweckel: 155 ~> 1550 vgl. 1471
@@ -252,7 +259,7 @@ public class MigrantMapper {
         Schultendorf: 28 ~> 280 vgl. 257
         Ellinghorst: 41 ~> 410 vgl. 311
 
-        Ergebnisse 2
+        Ergebnisse 2 (veraltet)
         Mitte I: 203/1033=19,65%    vgl. 22,20%   diff. (-2,55%)
         Mitte II: 100/658=15,20%    vgl. 14,60%   diff. (+0,60%)
         Zweckel: 149/944=15,78%     vgl. 13,27%   diff. (+2,51%)
@@ -263,10 +270,27 @@ public class MigrantMapper {
         Brauck: 257/1014=25,35%     vgl. 29,21%   diff. (-3,86%)
         Rosenhügel: 94/462=20,35%   vgl. 20,61%   diff. (-0,26%)
 
-        TOTAL: 6521 ~> 65210        vgl. 78565    diff. (-17,00%)
-        TOTAL_M: 1266 ~> 12660      vgl. 14806    diff. (-14,50%)
+        TOTAL: 6521 ~> 65210        vgl. 78565    scal. (-17,00%)
+        TOTAL_M: 1266 ~> 12660      vgl. 14806    scal. (-14,50%)
 
-        TOTAL_%: 18,8%              vgl. 18,85%
+        TOTAL_%: 19,41%              vgl. 18,85%  diff. (+0,56%)
+
+        Ergebnisse 3 MatsimRandom
+        Mitte I: 187/1033=18,10%    vgl. 22,20%   diff. (-4,1%)
+        Mitte II: 144/658=21,89%    vgl. 14,60%   diff. (+7,29%)
+        Zweckel: 135/944=14,30%     vgl. 13,27%   diff. (+1,03%)
+        Alt-Rentford: 75/395=18,99% vgl. 5,30%    diff. (+13,69%)
+        Schultendorf: 14/214=6,54%  vgl. 11,02%   diff. (-4,48%)
+        Ellinghorst: 39/273=14,29%  vgl. 10,48%   diff. (+3,81%)
+        Butendorf: 173/894=19,35%   vgl. 21,80%   diff. (-2,45%)
+        Brauck: 248/1014=24,46%     vgl. 29,21%   diff. (-4,75%)
+        Rosenhügel: 92/462=19,91%   vgl. 20,61%   diff. (-0,7%)
+
+        TOTAL: 6521 ~> 65210        vgl. 78565    scal. (-17,00%)
+        TOTAL_M: 1241 ~> 12410      vgl. 14806    scal. (-16,18%)
+
+        TOTAL_%: 19,03%             vgl. 18,85%   diff. (+0,18%)
+        //TODO Die Ergebnisse für die einzelnen Stadtbezirke sind wesentlich schlechter geworden. Liegt wohl an einem ungünstigen Seed
         */
 
     }
