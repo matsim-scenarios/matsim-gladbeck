@@ -85,7 +85,7 @@ public class HomeMultipleLocationFilter {
      * @param p Person to check
      * @param key Will search in all polygons, that have this {@code key} value in the {@code columnToMap} attribute.
      */
-    public boolean checkIfPersonInPolygon(Person p, String key){ // TODO Replace by efficient solution
+    public boolean checkIfPersonInPolygon(Person p, String key){
         return personMapping.get(key).contains(p.getId());
     }
 

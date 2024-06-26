@@ -215,7 +215,8 @@ public class MigrantMapper {
         for(var e : migrantProbabilityMap.entrySet()){
             double r = e.getValue();
             boolean isMigrant = rand.nextInt(1000) < r*1000;
-            pop.getPersons().get(e.getKey()).getAttributes().putAttribute("isMigrant", isMigrant);
+            //pop.getPersons().get(e.getKey()).getAttributes().putAttribute("isMigrant", isMigrant);
+            pop.getPersons().get(e.getKey()).getAttributes().putAttribute("subpopulation", "migrant");
             if (isMigrant) totalMigrants++;
             //TODO DEBUG
             if (isMigrant){
@@ -246,6 +247,8 @@ public class MigrantMapper {
                 "Name",
                 "EPSG:25832"
                 );
+        PopulationUtils.writePopulation(detecter.getPopulation(), "output/gladbeck-v1.3-10pct.migrants-mapped.xml.gz");
+
         System.out.println(detecter.getMigrantAmount());
         System.out.println(detecter.district_amounts);
         System.out.println(detecter.district_migrant_amounts);
