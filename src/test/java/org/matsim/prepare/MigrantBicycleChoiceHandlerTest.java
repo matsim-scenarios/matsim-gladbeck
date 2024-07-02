@@ -103,7 +103,7 @@ public class MigrantBicycleChoiceHandlerTest {
             @Override
             public void install() {
                 addEventHandlerBinding().toInstance(choiceHandler);
-                addControlerListenerBinding().toInstance(choiceHandler);
+              //  addControlerListenerBinding().toInstance(choiceHandler);
             }
         });
         controler.run();
