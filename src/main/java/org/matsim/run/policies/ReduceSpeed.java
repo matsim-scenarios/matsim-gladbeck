@@ -26,7 +26,19 @@ public class ReduceSpeed {
             //apply 'tempo 30' to all roads but primary and motorways
             link.setFreespeed(link.getFreespeed() * 0.6); //27 km/h is used in the net for 30 km/h streets
         });
+    }
 
+    public static void implementSpeedReductionOnPreDefinedLinks (Network network, List<PreparedGeometry> shpWithPreDefinedStreets) {
+        Set<? extends Link> carLinks = network.getLinks().values().stream()
+                .filter(link -> link.getAllowedModes().contains(TransportMode.car)) //filter car links
+                .filter(link -> !((String) link.getAttributes().getAttribute("type")).contains("residential"))
+                .filter(link -> ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), shpWithPreDefinedStreets)) //spatial filter
+                .collect(Collectors.toSet());
+
+        carLinks.forEach(link -> {
+            //apply 'tempo 30' to all roads witin the shape file
+            link.setFreespeed(link.getFreespeed() * 0.6); //27 km/h is used in the net for 30 km/h streets
+        });
     }
 
 }

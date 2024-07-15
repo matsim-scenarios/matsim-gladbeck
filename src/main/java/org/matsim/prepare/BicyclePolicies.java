@@ -18,9 +18,7 @@ import org.matsim.core.utils.gis.ShapeFileReader;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -96,6 +94,8 @@ public class BicyclePolicies implements MATSimAppCommand {
 		if (policies.contains(Policy.CyclewayEverywhere)) applyCyclewayEverywhere(filteredNetwork, bicycleFreedspeed);
 		if (policies.contains(Policy.SuperFast)) applySuperFast(filteredNetwork);
 		if (policies.contains(Policy.SuperSmooth)) applySuperSmooth(filteredNetwork);
+		if (policies.contains(Policy.EBikeCity)) applyEBikeCity(filteredNetwork);
+		if (policies.contains(Policy.BuerscheStraße)) applBuerscheStraße(filteredNetwork);
 
 		for (var link : filteredNetwork.getLinks().values()) {
 
@@ -135,6 +135,45 @@ public class BicyclePolicies implements MATSimAppCommand {
 			link.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
 		}
 	}
+
+	/**
+	 * Change infrastructure speed factor on all streets to double the speed of bicycles and half the capacity, also add a parallel link
+	 */
+	private static void applyEBikeCity(Network network) {
+
+		log.info("Adding infrastructure speed factor of 1.0 to all links in the network.");
+
+		for (var link : network.getLinks().values()) {
+			link.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
+			if (link.getAllowedModes().contains(TransportMode.car)) {
+				link.setCapacity(link.getCapacity() * 0.5);
+				if (link.getNumberOfLanes() > 2.0) {
+					link.setNumberOfLanes(link.getNumberOfLanes() * 0.5);
+				}
+				var id = link.getId().toString() + "_cyev";
+				var newLink = network.getFactory().createLink(Id.createLinkId(id), link.getFromNode(), link.getToNode());
+				newLink.getAttributes().putAttribute("type", "cycleway");
+				newLink.getAttributes().putAttribute("cycleway", "yes");
+				newLink.getAttributes().putAttribute("surface", "asphalt");
+				newLink.getAttributes().putAttribute("smoothness", "excellent");
+				newLink.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
+				NetworkUtils.setLinkEgressTime(newLink, TransportMode.bike, 0.0);
+				NetworkUtils.setLinkAccessTime(newLink, TransportMode.bike, 0.0);
+				var origid = link.getAttributes().getAttribute("origid");
+				origid = origid == null ? "" : origid;
+				newLink.getAttributes().putAttribute("origid", origid);
+				newLink.setCapacity(10000);
+				//default value of cyclist
+				newLink.setFreespeed(6.82);
+				newLink.setAllowedModes(Collections.singleton(TransportMode.bike));
+				network.addLink(newLink);
+
+			}
+		}
+
+
+	}
+
 
 	/**
 	 * add a bicycle link next to each link in case it in not a bike only link anyway.
@@ -187,11 +226,47 @@ public class BicyclePolicies implements MATSimAppCommand {
 				.forEach(link -> link.setAllowedModes(allowedModes));
 	}
 
+	private static void applBuerscheStraße(Network network) {
+		log.info("Converting all minor streets to cycle only streets");
+
+		List<Id<Link>> listOfLinksBuerscheStraße = new ArrayList<>();
+		listOfLinksBuerscheStraße.add(Id.createLinkId("355757330004f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("355757340001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("379220320014f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796400001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796260000f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("6127777950002f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796240011f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796490001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796640004f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3215069020001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796530001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796680004f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796440003f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("379220330007f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("6127777960002f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("6127777970002f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796300001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("3214796570001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("84532840011f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("84532840007f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("291727490001f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("328793380000f"));
+		listOfLinksBuerscheStraße.add(Id.createLinkId("105253520001f"));
+
+		for (var link : network.getLinks().values()) {
+			if (listOfLinksBuerscheStraße.contains(link.getId()))
+				link.getAttributes().putAttribute(BicycleUtils.BICYCLE_INFRASTRUCTURE_SPEED_FACTOR, 1.0);
+		}
+
+
+	}
+
 	private static boolean isBicycleOnly(Link link) {
 		return link.getAllowedModes().size() == 1 && link.getAllowedModes().contains(TransportMode.bike);
 	}
 
 	public enum Policy {
-		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets
+		SuperSmooth, CyclewayEverywhere, SuperFast, CycleStreets, EBikeCity, BuerscheStraße
 	}
 }

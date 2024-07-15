@@ -18,11 +18,12 @@ import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParamete
 
 import static org.junit.Assert.assertTrue;
 
+//test runs too long...
 @Ignore
 public class TestPtFlat {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
-    private static final String inputNetworkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.network_resolutionHigh-with-pt.xml.gz";
+    private static final String inputNetworkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.network.xml.gz";
 
     @Rule
     public MatsimTestUtils testUtils = new MatsimTestUtils();
@@ -32,20 +33,33 @@ public class TestPtFlat {
 
         var outputDir = testUtils.getOutputDirectory();
 
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--simplePtFlat=true", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
-        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--simplePtFlat=false", "--download-input", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile);
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withPtFlat", "--ptFlat", "1", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile,
+                "--shp", "/Users/gregorr/Documents/work/respos/shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp",
+                "--shp-crs", "EPSG:25832"
+        );
+        MATSimApplication.execute(TestApplication.class, "--output=" + outputDir + "withoutPtFlat", "--1pct", "--config:network.inputNetworkFile=" + inputNetworkFile,
+                "--shp", "/Users/gregorr/Documents/work/respos/shared-svn/projects/GlaMoBi/data/shp-files/Gladbeck.shp",
+                "--shp-crs", "EPSG:25832"
+                );
 
         // load output of both runs
         var scenarioWithPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithPtFlat).readFile(outputDir + "withPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
         var scenarioWithoutPtFlat = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenarioWithoutPtFlat).readFile(outputDir + "withoutPtFlat/" + TestApplication.RUN_ID + ".output_plans.xml.gz");
-        // somehow compare the two routes
-        var personWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
-        var personWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
+        // somehow compare the two plans
+        var unaffectedAgentScenario1 = scenarioWithPtFlat.getPopulation().getPersons().get(personId);
+        var unaffectedAgentScenario2 = scenarioWithoutPtFlat.getPopulation().getPersons().get(personId);
 
-        assertTrue(personWithPtFlat.getSelectedPlan().getScore() > personWithoutPtFlat.getSelectedPlan().getScore());
+        assertTrue(unaffectedAgentScenario1.getSelectedPlan().getScore().equals(unaffectedAgentScenario2.getSelectedPlan().getScore()));
 
+        System.out.printf(scenarioWithPtFlat.getPopulation().getPersons().toString() + "\n");
+        var agentWithPtFlat = scenarioWithPtFlat.getPopulation().getPersons().get(Id.createPersonId(personId+"inside"));
+        var agentWithoutPtFlat = scenarioWithoutPtFlat.getPopulation().getPersons().get(Id.createPersonId(personId+"inside"));
+
+
+
+        assertTrue(agentWithPtFlat.getSelectedPlan().getScore() > agentWithoutPtFlat.getSelectedPlan().getScore());
     }
 
     public static class TestApplication extends RunGladbeckScenario {
@@ -54,8 +68,8 @@ public class TestPtFlat {
         @Override
         public Config prepareConfig(Config config) {
             Config preparedConfig = super.prepareConfig(config);
-            preparedConfig.global().setNumberOfThreads(1);
-            preparedConfig.qsim().setNumberOfThreads(1);
+            //preparedConfig.global().setNumberOfThreads(1);
+            //preparedConfig.qsim().setNumberOfThreads(1);
             preparedConfig.plans().setInputFile(null);
             preparedConfig.controler().setLastIteration(0);
             preparedConfig.controler().setRunId(RUN_ID);
@@ -66,24 +80,43 @@ public class TestPtFlat {
         protected void prepareScenario(Scenario scenario) {
             // Other agents are not needed for the test
             scenario.getPopulation().getPersons().clear();
-            // add single person with two activities
+            // add single person with two activities living outside gladbeck
             var factory = scenario.getPopulation().getFactory();
             var plan = factory.createPlan();
             var homeCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65711")).getCoord();
-            var home = factory.createActivityFromCoord("home_600.0", homeCoord);
+            var home = factory.createActivityFromCoord("home_600", homeCoord);
             home.setEndTime(50400);
             plan.addActivity(home);
             var leg = factory.createLeg(TransportMode.pt);
             leg.setMode(TransportMode.pt);
             plan.addLeg(leg);
             var otherCoord = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65377")).getCoord();
-            var other = factory.createActivityFromCoord("other_3600.0",otherCoord);
+            var other = factory.createActivityFromCoord("other_3600",otherCoord);
             other.setEndTime(54000);
             plan.addActivity(other);
             var person = factory.createPerson(personId);
             person.addPlan(plan);
             person.getAttributes().putAttribute("subpopulation", "person");
             person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+
+            // add single person with two activities living inside gladbeck
+            var planInsider = factory.createPlan();
+            var homeCoordInsider = scenario.getNetwork().getLinks().get(Id.createLinkId("pt_65455")).getCoord();
+            var homeInsider = factory.createActivityFromCoord("home_600", homeCoordInsider);
+            homeInsider.setEndTime(50400);
+            planInsider.addActivity(homeInsider);
+            var legInsider = factory.createLeg(TransportMode.pt);
+            legInsider.setMode(TransportMode.pt);
+            planInsider.addLeg(legInsider);
+            var otherCoordInsider = scenario.getNetwork().getLinks().get( Id.createLinkId("pt_65377")).getCoord();
+            var otherInsider = factory.createActivityFromCoord("other_3600",otherCoordInsider);
+            otherInsider.setEndTime(54000);
+            planInsider.addActivity(otherInsider);
+            var personInsider = factory.createPerson(Id.createPersonId(personId+"inside"));
+            personInsider.addPlan(planInsider);
+            personInsider.getAttributes().putAttribute("subpopulation", "person");
+            personInsider.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+            scenario.getPopulation().addPerson(personInsider);
             scenario.getPopulation().addPerson(person);
             super.prepareScenario(scenario);
 
