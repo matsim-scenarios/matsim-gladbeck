@@ -1,7 +1,7 @@
 package org.matsim.run;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.locationtech.jts.util.Assert;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Person;
@@ -15,18 +15,18 @@ import org.matsim.testcases.MatsimTestUtils;
 
 public class TestPersonAttributes {
 
-    @Rule
+    @RegisterExtension
     public MatsimTestUtils utils = new MatsimTestUtils();
 
     @Test
     public final void runTestPersonAttributes() {
         String inputPath = String.valueOf(ExamplesUtils.getTestScenarioURL("equil-mixedTraffic"));
         Config config = ConfigUtils.loadConfig(inputPath + "config-with-mode-vehicles.xml");
-        config.controler().setLastIteration(0);
-        config.controler().setOutputDirectory("output/TestPersonAttributes/");
+        config.controller().setLastIteration(0);
+        config.controller().setOutputDirectory("output/TestPersonAttributes/");
         config.global().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
-        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
         Scenario scenario = ScenarioUtils.loadScenario(config);
         AssignPersonAttributes.assigningDifferentCitizenship(scenario, null);

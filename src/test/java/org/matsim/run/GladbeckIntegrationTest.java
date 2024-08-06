@@ -1,8 +1,7 @@
 package org.matsim.run;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -10,19 +9,18 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.application.MATSimApplication;
-import org.matsim.application.options.SampleOptions;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.testcases.MatsimTestUtils;
-import playground.vsp.openberlinscenario.cemdap.output.ActivityTypes;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
 
 public class GladbeckIntegrationTest {
-    @Rule
+
+    @RegisterExtension
     public MatsimTestUtils utils = new MatsimTestUtils();
 
     @Test
@@ -40,9 +38,10 @@ public class GladbeckIntegrationTest {
         Person bikePerson = PopulationUtils.getFactory().createPerson(Id.createPersonId("bikePerson"));
         Person walkPerson = PopulationUtils.getFactory().createPerson(Id.createPersonId("walkPerson"));
 
-        walkPerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
-        carPerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
-        bikePerson.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+
+        PersonUtils.setIncome(walkPerson, 1.0);
+        PersonUtils.setIncome(bikePerson, 1.0);
+        PersonUtils.setIncome(carPerson, 1.0);
 
         PopulationFactory factory = population.getFactory();
         Leg carLeg = factory.createLeg(TransportMode.car);
@@ -90,7 +89,7 @@ public class GladbeckIntegrationTest {
         @Override
         protected Config prepareConfig(Config config) {
             config = super.prepareConfig(config);
-            config.controler().setLastIteration(1);
+            config.controller().setLastIteration(1);
             config.plans().setInputFile(null);
             return config;
         }

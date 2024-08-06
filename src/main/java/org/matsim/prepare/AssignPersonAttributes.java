@@ -1,19 +1,12 @@
 package org.matsim.prepare;
 
-import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Population;
 import org.matsim.application.analysis.HomeLocationFilter;
 import org.matsim.application.options.ShpOptions;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.run.RunGladbeckScenario;
-import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
-import org.opengis.feature.simple.SimpleFeature;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import java.util.Collection;
-import java.util.List;
 
 public class AssignPersonAttributes {
 

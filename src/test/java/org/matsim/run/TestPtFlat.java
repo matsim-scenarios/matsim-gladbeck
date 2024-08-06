@@ -1,8 +1,8 @@
 package org.matsim.run;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -11,21 +11,21 @@ import org.matsim.application.MATSimApplication;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.testcases.MatsimTestUtils;
-import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //test runs too long...
-@Ignore
+@Disabled
 public class TestPtFlat {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
     private static final String inputNetworkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.network.xml.gz";
 
-    @Rule
+    @RegisterExtension
     public MatsimTestUtils testUtils = new MatsimTestUtils();
 
     @Test
@@ -71,8 +71,8 @@ public class TestPtFlat {
             //preparedConfig.global().setNumberOfThreads(1);
             //preparedConfig.qsim().setNumberOfThreads(1);
             preparedConfig.plans().setInputFile(null);
-            preparedConfig.controler().setLastIteration(0);
-            preparedConfig.controler().setRunId(RUN_ID);
+            preparedConfig.controller().setLastIteration(0);
+            preparedConfig.controller().setRunId(RUN_ID);
             return preparedConfig;
         }
 
@@ -97,7 +97,8 @@ public class TestPtFlat {
             var person = factory.createPerson(personId);
             person.addPlan(plan);
             person.getAttributes().putAttribute("subpopulation", "person");
-            person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+
+            PersonUtils.setIncome(person, 1);
 
             // add single person with two activities living inside gladbeck
             var planInsider = factory.createPlan();
@@ -115,7 +116,8 @@ public class TestPtFlat {
             var personInsider = factory.createPerson(Id.createPersonId(personId+"inside"));
             personInsider.addPlan(planInsider);
             personInsider.getAttributes().putAttribute("subpopulation", "person");
-            personInsider.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+            PersonUtils.setIncome(personInsider, 1);
+
             scenario.getPopulation().addPerson(personInsider);
             scenario.getPopulation().addPerson(person);
             super.prepareScenario(scenario);

@@ -20,7 +20,6 @@
 package org.matsim.gui;
 
 import org.matsim.run.RunGladbeckScenario;
-import org.matsim.run.RunMetropoleRuhrScenario;
 import org.matsim.run.gui.Gui;
 
 public class MATSimGUI {

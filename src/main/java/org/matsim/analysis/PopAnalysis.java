@@ -48,7 +48,7 @@ public class PopAnalysis implements MATSimAppCommand {
 
 
     public static void main(String[] args) throws IOException {
-        new PopulationAnalysis().execute(args);
+        new PopAnalysis().execute(args);
     }
 
     @Override

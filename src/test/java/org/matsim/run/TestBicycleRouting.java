@@ -1,8 +1,8 @@
 package org.matsim.run;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -15,26 +15,27 @@ import org.matsim.application.MATSimApplication;
 import org.matsim.contrib.bicycle.BicycleConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.testcases.MatsimTestUtils;
 import picocli.CommandLine;
-import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Ignore
+
+@Disabled
 public class TestBicycleRouting {
 
     private static final Id<Person> personId = Id.createPersonId("test-person");
     private static final String inputNetworkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.4.network_resolutionHigh-with-pt.xml.gz";
 
-    @Rule
+    @RegisterExtension
     public MatsimTestUtils testUtils = new MatsimTestUtils();
 
     @Test
@@ -88,8 +89,8 @@ public class TestBicycleRouting {
             preparedConfig.global().setNumberOfThreads(1);
             preparedConfig.qsim().setNumberOfThreads(1);
             preparedConfig.plans().setInputFile(null);
-            preparedConfig.controler().setLastIteration(0);
-            preparedConfig.controler().setRunId(RUN_ID);
+            preparedConfig.controller().setLastIteration(0);
+            preparedConfig.controller().setRunId(RUN_ID);
 
             // Disable PT
             preparedConfig.transit().setVehiclesFile(null);
@@ -124,7 +125,7 @@ public class TestBicycleRouting {
             plan.addActivity(other);
             var person = factory.createPerson(personId);
             person.addPlan(plan);
-            person.getAttributes().putAttribute(IncomeDependentUtilityOfMoneyPersonScoringParameters.PERSONAL_INCOME_ATTRIBUTE_NAME, 1.0);
+            PersonUtils.setIncome(person, 1.0);
             scenario.getPopulation().addPerson(person);
 
             // filter the network

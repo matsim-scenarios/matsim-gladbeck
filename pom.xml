@@ -1,31 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+
+	<parent>
+		<groupId>org.matsim</groupId>
+		<artifactId>matsim-all</artifactId>
+		<!-- Define MATSim version here -->
+		<!-- release -->
+		<!-- <version>15.0</version> -->
+
+		<!-- PR-labelled release -->
+		<version>2025.0-PR3388</version>
+
+		<!-- snapshot == not recommended: rather use PR-labelled release!-->
+		<!--		<version>2025.0-SNAPSHOT</version>-->
+	</parent>
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.matsim-scenarios</groupId>
 	<artifactId>matsim-gladbeck</artifactId>
-	<version>2.0-SNAPSHOT</version>
+	<version>3.0-SNAPSHOT</version>
 
 	<name>MATSim Gladbeck project</name>
 	<description>MATSim Gladbeck project</description>
 
 	<properties>
-		<!-- release -->
-		<!-- <matsim.version>13.0</matsim.version>  -->
+		<!-- Don't modify, will use the same version as parent -->
+		<matsim.version>${project.parent.version}</matsim.version>
 
-		<!-- snapshot release -->
-		<!-- <matsim.version>14.0-SNAPSHOT</matsim.version> -->
-
-		<!-- weekly release -->
-		<!-- <matsim.version>13.0-2020w51-SNAPSHOT</matsim.version>  -->
-
-		<!-- PR release -->
-		<matsim.version>15.0-PR2210</matsim.version>
-		
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.release>21</maven.compiler.release>
 	</properties>
 
 	<repositories>
@@ -84,14 +89,12 @@
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-metropole-ruhr</artifactId>
 			<version>master-99292af8ca-1</version>
-		</dependency>
-
-		<dependency>
-			<!-- Include the JUnit testing library.  Not transitive. -->
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
-			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.github.matsim-vsp</groupId>
+					<artifactId>pt-extensions</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -107,6 +110,24 @@
 			<artifactId>matsim</artifactId>
 			<type>test-jar</type>
 			<version>${matsim.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Include the JUnit testing library.  Not transitive. -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -149,27 +170,58 @@
 		</dependency>
 
 		<dependency>
-            <groupId>com.github.matsim-org</groupId>
-            <artifactId>GTFS2MATSim</artifactId>
-            <version>11.1</version>
-        </dependency>
+			<groupId>com.github.matsim-org</groupId>
+			<artifactId>gtfs2matsim</artifactId>
+			<version>fc8b13954d</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.matsim</groupId>
+					<artifactId>matsim</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.9.0</version>
+            <version>1.11.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.1.1</version>
+            <version>5.3.0</version>
         </dependency>
 
 		<dependency>
 			<groupId>com.github.matsim-vsp</groupId>
 			<artifactId>pt-extensions</artifactId>
-			<version>662c5ace49</version>
+			<version>b39f03f2f0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.matsim</groupId>
+					<artifactId>matsim</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.matsim.contrib</groupId>
+					<artifactId>drt</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.matsim.contrib</groupId>
+					<artifactId>dvrp</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.matsim.contrib</groupId>
+					<artifactId>vsp</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Fixate this dependency to avoid errors	-->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.7.3</version>
 		</dependency>
 
 	</dependencies>
@@ -179,11 +231,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>3.0.0-M9</version>
 				<configuration>
-					<forkMode>once</forkMode>
+					<forkCount>1</forkCount>
 					<!-- avoid out of memory errors: -->
-					<argLine>-Xmx6500m -Djava.awt.headless=true -Dmatsim.preferLocalDtds=true</argLine>
+					<argLine>@{argLine} -Xmx6500m -Djava.awt.headless=true -Dmatsim.preferLocalDtds=true</argLine>
 					<!--necessary in tu berlin gitlab. BUT not good in other places, so solve by command line switch only where needed.  kai, nov'18-->
 					<!--<useSystemClassLoader>false</useSystemClassLoader>-->
 				</configuration>
@@ -249,6 +301,41 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.4.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>10.17.0</version>
+					</dependency>
+					<dependency>
+						<groupId>com.github.sevntu-checkstyle</groupId>
+						<artifactId>sevntu-checks</artifactId>
+						<version>1.44.1</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<failOnViolation>true</failOnViolation>
+					<linkXRef>false</linkXRef>
+				</configuration>
+				<executions>
+					<execution>
+						<id>checkstyle</id>
+						<phase>package</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
