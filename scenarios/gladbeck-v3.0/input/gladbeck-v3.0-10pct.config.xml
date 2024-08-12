@@ -163,18 +163,6 @@
         <!-- If enabled, it is ensured that all events that are created during a time step of the mobility simulation are processed before the next time step is simulated. E.g. neccessary when within-day replanning is used. -->
         <param name="synchronizeOnSimSteps" value="true" />
     </module>
-    <module name="parkingCost" >
-        <param name="activityPrefixForDailyParkingCosts" value="home" />
-        <param name="activityPrefixesToBeExcludedFromParkingCosts" value="" />
-        <param name="dailyParkingCostLinkAttributeName" value="dailyPCost" />
-        <param name="extraHourParkingCostLinkAttributeName" value="extraHourPCost" />
-        <param name="firstHourParkingCostLinkAttributeName" value="oneHourPCost" />
-        <param name="maxDailyParkingCostLinkAttributeName" value="maxDailyPCost" />
-        <param name="maxParkingDurationAttributeName" value="maxPTime" />
-        <param name="mode" value="car" />
-        <param name="parkingPenaltyAttributeName" value="pFine" />
-        <param name="residentialParkingFeePerDay" value="resPCosts" />
-    </module>
     <module name="planCalcScore" >
         <!-- logit model scale parameter. default: 1.  Has name and default value for historical reasons (see Bryan Raney's phd thesis). -->
         <param name="BrainExpBeta" value="1.0" />
@@ -275,24 +263,6 @@
             <!-- Speed for a teleported mode. Travel time = (<beeline distance> * beelineDistanceFactor) / teleportedModeSpeed. Insert a line like this for every such mode. -->
             <param name="teleportedModeSpeed" value="1.39" />
         </parameterset>
-    </module>
-    <module name="ptCounts" >
-        <!-- factor by which to re-scale the simulated values.  necessary when simulation runs with something different from 100%.  needs to be adapted manually -->
-        <param name="countsScaleFactor" value="1.0" />
-        <!-- distance to distanceFilterCenterNode to include counting stations. The unit of distance is the Euclidean distance implied by the coordinate system -->
-        <param name="distanceFilter" value="null" />
-        <!-- node id for center node of distance filter -->
-        <param name="distanceFilterCenterNode" value="null" />
-        <!-- input file containing the alighting (getting off) counts for pt -->
-        <param name="inputAlightCountsFile" value="null" />
-        <!-- input file containing the boarding (getting on) counts for pt -->
-        <param name="inputBoardCountsFile" value="null" />
-        <!-- input file containing the occupancy counts for pt -->
-        <param name="inputOccupancyCountsFile" value="null" />
-        <!-- possible values: `html', `txt', `all' -->
-        <param name="outputformat" value="null" />
-        <!-- every how many iterations (starting with 0) counts comparisons are generated -->
-        <param name="ptCountsInterval" value="10" />
     </module>
     <module name="ptExtensions" >
         <parameterset type="intermodalAccessEgressModeUtilityRandomization" >
@@ -511,23 +481,10 @@
         <param name="analyzedModes" value="car,bike" />
         <param name="calculateLinkToLinkTravelTimes" value="false" />
         <param name="calculateLinkTravelTimes" value="true" />
-        <!-- (only for backwards compatiblity; only used if separateModes==false)  Only modes included in analyzedModes are included. -->
-        <param name="filterModes" value="false" />
-        <!-- The lenght (in sec) of the time period that is splited into time bins; an additional time bin is created to aggregate all travel times collected after maxTime -->
-        <param name="maxTime" value="108000" />
-        <!-- (only for backwards compatibility) If false, link travel times are measured and aggregated over all vehicles using the link. -->
         <param name="separateModes" value="true" />
-        <!-- How to deal with congested time bins that have no link entry events. `optimistic' assumes free speed (too optimistic); 'experimental_LastMile' is experimental and probably too pessimistic. -->
-        <param name="travelTimeAggregator" value="optimistic" />
-        <!-- The size of the time bin (in sec) into which the link travel times are aggregated for the router -->
-        <param name="travelTimeBinSize" value="900" />
-        <!-- possible values: TravelTimeCalculatorArray TravelTimeCalculatorHashMap  -->
-        <param name="travelTimeCalculator" value="TravelTimeCalculatorArray" />
-        <!-- How to deal with link entry times at different positions during the time bin. Currently supported: average, linearinterpolation -->
-        <param name="travelTimeGetter" value="average" />
     </module>
     <module name="vehicles" >
-        <param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/gladbeck-v1.0-10pct.mode-vehicles.xml.gz" />
+        <param name="vehiclesFile" value="./gladbeck-v3.0.mode-vehicles.xml" />
     </module>
     <module name="vspExperimental" >
         <!-- (do not use except of you have to) There was a problem with pt interaction scoring.  Some people solved it by overwriting the parameters of the pt interaction activity type.  Doing this now throws an Exception.  If you still insist on doing this, set the following to true. -->

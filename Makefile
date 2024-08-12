@@ -1,6 +1,6 @@
 
 JAR := matsim-gladbeck-*.jar
-V := v2.0
+V := v3.0
 CRS := EPSG:25832
 
 $(JAR):

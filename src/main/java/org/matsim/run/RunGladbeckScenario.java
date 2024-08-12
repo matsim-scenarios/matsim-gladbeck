@@ -12,6 +12,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.application.MATSimApplication;
 import org.matsim.application.analysis.HomeLocationFilter;
 import org.matsim.application.analysis.noise.NoiseAnalysis;
+import org.matsim.application.options.SampleOptions;
 import org.matsim.application.options.ShpOptions;
 import org.matsim.application.prepare.population.DownSamplePopulation;
 import org.matsim.application.prepare.population.ExtractHomeCoordinates;
@@ -45,9 +46,12 @@ import java.util.*;
 @MATSimApplication.Analysis({NoiseAnalysis.class})
 public class RunGladbeckScenario extends MATSimApplication {
 
-    public static final String VERSION = "v2.0";
+    public static final String VERSION = "v3.0";
 
     private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
+
+    @CommandLine.Mixin
+    SampleOptions sample = new SampleOptions(10, 1);
 
     @CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
     boolean schoolClosure;
@@ -81,7 +85,7 @@ public class RunGladbeckScenario extends MATSimApplication {
     }
 
     public RunGladbeckScenario() {
-        super(String.format("./scenarios/gladbeck-v2.0/input/gladbeck-%s-10pct.config.xml", VERSION));
+        super(String.format("./scenarios/gladbeck-%s/input/gladbeck-%s-10pct.config.xml", VERSION, VERSION));
     }
 
     public static void main(String[] args) {
@@ -139,12 +143,16 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         // this is needed for the school closure case
         config.network().setTimeVariantNetwork(true);
-        return super.prepareConfig(config);
+
+        ScenarioUtils.prepareConfig(config, sample, false);
+
+        return config;
     }
 
     @Override
     protected void prepareScenario(Scenario scenario) {
-        super.prepareScenario(scenario);
+
+        ScenarioUtils.prepareScenario(scenario);
 
         if (slowSpeedZone) {
             ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
@@ -191,6 +199,8 @@ public class RunGladbeckScenario extends MATSimApplication {
 
     @Override
     protected void prepareControler(Controler controler) {
+
+        ScenarioUtils.prepareControler(controler);
 
         //controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
         if (klimaTalerMoneyAmount != 0.0) {
