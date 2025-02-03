@@ -75,7 +75,6 @@ public class RunGladbeckScenario extends MATSimApplication {
     private ShpOptions shp;
     @CommandLine.Option(names = {"--policy", "--p"})
     private Set<BicyclePolicies.Policy> policies = new HashSet<>();
-
     @CommandLine.Option(names = {"--bicycle-freespeed", "--bf"})
     private double bicycleFreedspeed = 6.82; // taken from vehicles file in metropole-ruhr-scenario https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/metropole-ruhr/metropole-ruhr-v1.0/input/metropole-ruhr-v1.0.mode-vehicles.xml
 
@@ -90,40 +89,6 @@ public class RunGladbeckScenario extends MATSimApplication {
 
     public static void main(String[] args) {
         MATSimApplication.run(RunGladbeckScenario.class, args);
-    }
-
-    public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                addEventHandlerBinding().toInstance(klimaTaler);
-                addControlerListenerBinding().toInstance(klimaTaler);
-                new PersonMoneyEventsAnalysisModule();
-            }
-        });
-    }
-
-    public static void addPtFlat(Controler controler, PtFlatrate ptFlatrate) {
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                addEventHandlerBinding().toInstance(ptFlatrate);
-                addControlerListenerBinding().toInstance(ptFlatrate);
-                new PersonMoneyEventsAnalysisModule();
-            }
-        });
-    }
-
-    private static void writeOutAgents(List<Id<Person>> listOfIds) throws IOException {
-        BufferedWriter writer = IOUtils.getBufferedWriter("agentsWithFreePt.tsv");
-
-        writer.write("Id");
-        writer.newLine();
-        for (Id<Person> listOfId : listOfIds) {
-            writer.write(listOfId.toString());
-            writer.newLine();
-        }
-        writer.close();
     }
 
     @Override
@@ -168,8 +133,6 @@ public class RunGladbeckScenario extends MATSimApplication {
             // street in front of Mosaikschule
             listOfSchoolLinks.add(Id.createLinkId("353353080004r"));
             listOfSchoolLinks.add(Id.createLinkId("353353080004f"));
-
-
             new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
         }
 
@@ -209,16 +172,15 @@ public class RunGladbeckScenario extends MATSimApplication {
             addKlimaTaler(controler, klimaTaler);
         }
 
-        controler.addOverridingModule(new AbstractModule() {
+        /*controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
                 bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
             }
-        });
+        }); */
 
 
         if (ptFlat != 0 || cityWidePtFlat) {
-
             List<Id<Person>> agentsLivingInGladbeck = new ArrayList<>();
             List<Id<Person>> agentsWithPtFlat = new ArrayList<>();
             HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, controler.getScenario().getConfig().global().getCoordinateSystem(), controler.getScenario().getPopulation());
@@ -228,7 +190,6 @@ public class RunGladbeckScenario extends MATSimApplication {
                     agentsLivingInGladbeck.add(person.getId());
                 }
             }
-
 
             if (cityWidePtFlat) {
                 agentsWithPtFlat.addAll(agentsLivingInGladbeck);
@@ -251,5 +212,40 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         }
         super.prepareControler(controler);
+    }
+
+
+    public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler) {
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addEventHandlerBinding().toInstance(klimaTaler);
+                addControlerListenerBinding().toInstance(klimaTaler);
+                new PersonMoneyEventsAnalysisModule();
+            }
+        });
+    }
+
+    public static void addPtFlat(Controler controler, PtFlatrate ptFlatrate) {
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addEventHandlerBinding().toInstance(ptFlatrate);
+                addControlerListenerBinding().toInstance(ptFlatrate);
+                new PersonMoneyEventsAnalysisModule();
+            }
+        });
+    }
+
+    private static void writeOutAgents(List<Id<Person>> listOfIds) throws IOException {
+        BufferedWriter writer = IOUtils.getBufferedWriter("agentsWithFreePt.tsv");
+
+        writer.write("Id");
+        writer.newLine();
+        for (Id<Person> listOfId : listOfIds) {
+            writer.write(listOfId.toString());
+            writer.newLine();
+        }
+        writer.close();
     }
 }

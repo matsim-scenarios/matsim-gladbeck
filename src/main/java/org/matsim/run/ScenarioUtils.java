@@ -134,7 +134,6 @@ public final class ScenarioUtils {
 					.toArray(String[]::new)
 			);
 
-
 			ChangeModeConfigGroup changeModeConfigGroup = config.changeMode();
 			changeModeConfigGroup.setModes(
 					Arrays.stream(changeModeConfigGroup.getModes())
