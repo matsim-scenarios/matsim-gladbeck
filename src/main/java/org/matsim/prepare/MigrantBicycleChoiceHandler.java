@@ -1,6 +1,7 @@
 package org.matsim.prepare;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.PersonDepartureEvent;
 import org.matsim.api.core.v01.events.PersonScoreEvent;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
@@ -9,7 +10,6 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.controler.events.AfterMobsimEvent;
 import org.matsim.core.controler.listener.AfterMobsimListener;
 import org.matsim.core.population.PopulationUtils;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler,
 
     @Override
     public void handleEvent(PersonDepartureEvent personDepartureEvent) {
-        if(personDepartureEvent.getLegMode().equals("bicycle") && migrants.contains(personDepartureEvent.getPersonId())) {
+        if(personDepartureEvent.getLegMode().equals(TransportMode.bike) && migrants.contains(personDepartureEvent.getPersonId())) {
             migrantDepartures.add(new PersonScoreEvent(personDepartureEvent.getTime(), personDepartureEvent.getPersonId(), -10000.0, "punishment_for_cycling"));
         }
         // TODO TransportMode.bike
@@ -53,6 +53,7 @@ public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler,
 
     @Override
     public void notifyAfterMobsim(AfterMobsimEvent afterMobsimEvent) {
+
         for(PersonScoreEvent personScoreEvent : migrantDepartures) {
             afterMobsimEvent.getServices().getEvents().processEvent(personScoreEvent);
         }

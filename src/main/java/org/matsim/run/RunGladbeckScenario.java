@@ -23,15 +23,13 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.*;
-import org.matsim.run.policies.KlimaTaler;
-import org.matsim.run.policies.PtFlatrate;
-import org.matsim.run.policies.ReduceSpeed;
-import org.matsim.run.policies.SchoolRoadsClosure;
+import org.matsim.run.policies.*;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 import javax.annotation.Nullable;
@@ -138,7 +136,8 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
-			new MigrantMapper(scenario.getConfig().plans().getInputFile(), "", "",scenario.getConfig().global().getCoordinateSystem().toString());
+			new MigrantMapper(scenario.getPopulation(), "/Users/gregorr/Downloads/gladbeck_stadtbezirke_osm_25832/gladbeck_stadtbezirke_osm_25832.shp", "Name", scenario.getConfig().global().getCoordinateSystem().toString());
+
         }
 
         if (!policies.isEmpty()) {
@@ -178,7 +177,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         });
 
 		if (cyclingCourse) {
-			MigrantBicycleChoiceHandler migrantBicycleChoiceHandler= new MigrantBicycleChoiceHandler();
+			MigrantBicycleChoiceHandler migrantBicycleChoiceHandler= new MigrantBicycleChoiceHandler(controler.getScenario().getPopulation());
 			addCyclingMigrants(controler, migrantBicycleChoiceHandler);
 		}
 

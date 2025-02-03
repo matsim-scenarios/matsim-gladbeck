@@ -46,13 +46,13 @@ public class MigrantMapper {
 
     /**
      * Computes the probability of every Person to be a migrant and saves it as a map in {@code migrantProbabilityMap}.
-     * @param populationPath Path to the population file
+     * @param population population
      * @param cityDistrictSHPPath Path to the shapefile containing the districts of the city
      * @param districtIdentifierName Identifying attribute of the polygons of the shapefile (e.g. Name)
      * @param CRS Coordinate Reference System (e.g. EPSG:25832)
      */
-    public MigrantMapper(String populationPath, String cityDistrictSHPPath, String districtIdentifierName, String CRS){ // TODO custom filepaths
-        pop = PopulationUtils.readPopulation(populationPath);
+    public MigrantMapper(Population population, String cityDistrictSHPPath, String districtIdentifierName, String CRS){
+        pop = population;
         ShpOptions shp = new ShpOptions(Path.of(cityDistrictSHPPath), CRS, StandardCharsets.UTF_8);
         ShpOptions.Index index = shp.createIndex(CRS, districtIdentifierName);
         filter = new HomeMultipleLocationFilter(shp, CRS, districtIdentifierName, pop);
@@ -241,9 +241,10 @@ public class MigrantMapper {
     }
 
     public static void main(String[] args) {
+        /*
         MigrantMapper detecter = new MigrantMapper(
-                "../shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.3-10pct.plans-cleaned.xml.gz",
-                "../stuff/gladbeck_stadtbezirke_osm_25832.shp",
+                "../../shared-svn/projects/GlaMoBi/matsim-input-files/gladbeck-v1.3-10pct.plans-cleaned.xml.gz",
+                "/Users/gregorr/Downloads/gladbeck_stadtbezirke_osm_25832/gladbeck_stadtbezirke_osm_25832.shp",
                 "Name",
                 "EPSG:25832"
                 );
