@@ -24,7 +24,6 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule;
-import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.extensions.pt.PtExtensionsConfigGroup;
 import org.matsim.extensions.pt.fare.intermodalTripFareCompensator.IntermodalTripFareCompensatorConfigGroup;
@@ -33,14 +32,13 @@ import org.matsim.extensions.pt.fare.intermodalTripFareCompensator.IntermodalTri
 import org.matsim.extensions.pt.routing.EnhancedRaptorIntermodalAccessEgress;
 import org.matsim.extensions.pt.routing.ptRoutingModes.PtIntermodalRoutingModesConfigGroup;
 import org.matsim.extensions.pt.routing.ptRoutingModes.PtIntermodalRoutingModesModule;
-import org.matsim.prepare.RuhrUtils;
+import org.matsim.prepare.GladbeckUtils;
 import org.matsim.simwrapper.SimWrapperConfigGroup;
 import org.matsim.simwrapper.SimWrapperModule;
 import org.matsim.vehicles.VehicleType;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 import playground.vsp.simpleParkingCostHandler.ParkingCostConfigGroup;
 import playground.vsp.simpleParkingCostHandler.ParkingCostModule;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +47,7 @@ import java.util.Set;
 import static org.matsim.core.config.groups.RoutingConfigGroup.AccessEgressType.accessEgressModeToLinkPlusTimeConstant;
 
 /**
- * This class contains common functionality for scenario setup. It was mostly taken from {@link RunMetropoleRuhrScenario}.
+ * This class contains common functionality for scenario setup. It was mostly taken from {@RunMetropoleRuhrScenario}.
  */
 public final class ScenarioUtils {
 
@@ -121,12 +119,9 @@ public final class ScenarioUtils {
 
 		// someone wished to have an easy option to remove all intermodal functionality, so remove it from config or switch off
 		if (!intermodal) {
-
 			log.info("Disabling intermodal config...");
-
 			// remove config options
 			SubtourModeChoiceConfigGroup subtourModeChoice = config.subtourModeChoice();
-
 			// intermodal pt should not be a chain-based mode, otherwise those would have to be modified too
 			subtourModeChoice.setModes(
 					Arrays.stream(subtourModeChoice.getModes())
@@ -177,12 +172,12 @@ public final class ScenarioUtils {
 
 		// this is needed for the parking cost money events
 		ParkingCostConfigGroup parkingCostConfigGroup = ConfigUtils.addOrGetModule(config, ParkingCostConfigGroup.class);
-		parkingCostConfigGroup.setFirstHourParkingCostLinkAttributeName(RuhrUtils.ONE_HOUR_P_COST);
-		parkingCostConfigGroup.setExtraHourParkingCostLinkAttributeName(RuhrUtils.EXTRA_HOUR_P_COST);
-		parkingCostConfigGroup.setMaxDailyParkingCostLinkAttributeName(RuhrUtils.MAX_DAILY_P_COST);
-		parkingCostConfigGroup.setMaxParkingDurationAttributeName(RuhrUtils.MAX_P_TIME);
-		parkingCostConfigGroup.setParkingPenaltyAttributeName(RuhrUtils.P_FINE);
-		parkingCostConfigGroup.setResidentialParkingFeeAttributeName(RuhrUtils.RES_P_COSTS);
+		parkingCostConfigGroup.setFirstHourParkingCostLinkAttributeName(GladbeckUtils.ONE_HOUR_P_COST);
+		parkingCostConfigGroup.setExtraHourParkingCostLinkAttributeName(GladbeckUtils.EXTRA_HOUR_P_COST);
+		parkingCostConfigGroup.setMaxDailyParkingCostLinkAttributeName(GladbeckUtils.MAX_DAILY_P_COST);
+		parkingCostConfigGroup.setMaxParkingDurationAttributeName(GladbeckUtils.MAX_P_TIME);
+		parkingCostConfigGroup.setParkingPenaltyAttributeName(GladbeckUtils.P_FINE);
+		parkingCostConfigGroup.setResidentialParkingFeeAttributeName(GladbeckUtils.RES_P_COSTS);
 
 		log.info("using accessEgressModeToLinkPlusTimeConstant");
 		// we do this to model parking search traffic, as on some links car agents have additional travel time
@@ -274,8 +269,9 @@ public final class ScenarioUtils {
 
 				// calculate access/egress leg generalized cost correctly for intermodal pt routing
 				bind(RaptorIntermodalAccessEgress.class).to(EnhancedRaptorIntermodalAccessEgress.class);
+
 				// separate pure walk+pt from intermodal pt in mode stats etc.
-				bind(AnalysisMainModeIdentifier.class).to(IntermodalPtAnalysisModeIdentifier.class);
+				//bind(AnalysisMainModeIdentifier.class).to(IntermodalPtAnalysisModeIdentifier.class);
 
 				// for income dependent scoring --> this works with the bicycle contrib as we don´t use the scoring in the bicycle contrib
 				bind(ScoringParametersForPerson.class).to(IncomeDependentUtilityOfMoneyPersonScoringParameters.class).in(Singleton.class);
