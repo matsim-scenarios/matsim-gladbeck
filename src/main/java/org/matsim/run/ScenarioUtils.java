@@ -6,8 +6,8 @@ import com.google.common.collect.Sets;
 import com.google.inject.Singleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.locationtech.jts.util.Assert;
 import org.matsim.analysis.ModeChoiceCoverageControlerListener;
+import org.matsim.analysis.linkpaxvolumes.LinkPaxVolumesAnalysisModule;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.analysis.pt.stop2stop.PtStop2StopAnalysisModule;
 import org.matsim.api.core.v01.Id;
@@ -16,7 +16,11 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.application.options.SampleOptions;
 import org.matsim.contrib.bicycle.BicycleConfigGroup;
 import org.matsim.contrib.bicycle.BicycleModule;
+import org.matsim.contrib.vsp.pt.fare.DistanceBasedPtFareParams;
+import org.matsim.contrib.vsp.pt.fare.FareZoneBasedPtFareParams;
+import org.matsim.contrib.vsp.pt.fare.PtFareConfigGroup;
 import org.matsim.contrib.vsp.scenario.SnzActivities;
+import org.matsim.contrib.vsp.scoring.RideScoringParamsFromCarParams;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.*;
@@ -60,7 +64,6 @@ public final class ScenarioUtils {
 	 */
 	public static void prepareCommercialTrafficConfig(Config config) {
 
-		// TODO: these are not correct yet, vehicle Types must be updated
 		Set<String> modes = Set.of("freight", "truck8t", "truck18t", "truck26t", "truck40t");
 
 		modes.forEach(mode -> {
@@ -115,7 +118,6 @@ public final class ScenarioUtils {
 
 		// because vsp default reasons
 		config.facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.onePerActivityLinkInPlansFile);
-
 
 		// someone wished to have an easy option to remove all intermodal functionality, so remove it from config or switch off
 		if (!intermodal) {
@@ -206,28 +208,49 @@ public final class ScenarioUtils {
 
 		//ride scoring params
 
+		//ride scoring params
 		// alpha can be calibrated
 		double alpha = 2.0;
-		//gamma must stay one
-		double gamma = 0.0;
-		double monetaryDistanceRateRide =  config.scoring().getOrCreateModeParams(TransportMode.car).getMonetaryDistanceRate() * alpha;
-
-		double marginalUtilityOfTravllingRide = config.scoring().getOrCreateModeParams(TransportMode.car).getMarginalUtilityOfTraveling(); //marginal disutility of passenger
-		marginalUtilityOfTravllingRide += alpha * (-config.scoring().getPerforming_utils_hr() + config.scoring().getOrCreateModeParams(TransportMode.car).getMarginalUtilityOfTraveling()); // Zeitverbrauch des Fahrers
-		//marginalUtilityOfTravllingRide += gamma * -config.scoring().getPerforming_utils_hr(); //we prefer not using this term
-
-		double tmp = (alpha + gamma) * -(config.scoring().getPerforming_utils_hr()) + config.scoring().getOrCreateModeParams(TransportMode.car).getMarginalUtilityOfTraveling() * (1.0 + alpha) ;
-
-		Assert.isTrue(tmp==marginalUtilityOfTravllingRide);
-
-		double marginalUtilityOfDistanceRide = (alpha + 1.0) * config.scoring().getOrCreateModeParams(TransportMode.car).getMarginalUtilityOfDistance();
-		config.scoring().getOrCreateModeParams(TransportMode.ride).setMonetaryDistanceRate(monetaryDistanceRateRide);
-		config.scoring().getOrCreateModeParams(TransportMode.ride).setMarginalUtilityOfDistance(marginalUtilityOfDistanceRide);
-		config.scoring().getOrCreateModeParams(TransportMode.ride).setMarginalUtilityOfTraveling(marginalUtilityOfTravllingRide);
+		RideScoringParamsFromCarParams.setRideScoringParamsBasedOnCarParams(config.scoring(), alpha);
 
 		prepareCommercialTrafficConfig(config);
+		preparePtFareConfig(config);
 
 		return config;
+	}
+
+	private static void preparePtFareConfig(Config config) {
+		PtFareConfigGroup ptFareConfigGroup = ConfigUtils.addOrGetModule(config, PtFareConfigGroup.class);
+
+		// inside of RVR use the RVR Tarif
+		FareZoneBasedPtFareParams rvr = new FareZoneBasedPtFareParams();
+		rvr.setTransactionPartner("VRR");
+		rvr.setDescription("VRR Tarifstufe A");
+		rvr.setFareZoneShp("./pt-pricing/pt_preisstufen_fare_all3.0.shp");
+		rvr.setOrder(1);
+
+		// outside of RVR use the eezyVRR Tarif 1,50 EUR + 0.25 * Luftlinien-km.
+		DistanceBasedPtFareParams eezy = new DistanceBasedPtFareParams();
+		eezy.setTransactionPartner("eezyVRR");
+		eezy.setDescription("eezyVRR");
+		eezy.setFareZoneShp("./nrwArea/dvg2bld_nw.shp");
+		DistanceBasedPtFareParams.DistanceClassLinearFareFunctionParams eezyFareFunction = eezy.getOrCreateDistanceClassFareParams(Double.POSITIVE_INFINITY);
+		eezyFareFunction.setFareIntercept(1.5);
+		eezyFareFunction.setFareSlope(0.00025);
+		eezy.setOrder(2);
+
+		DistanceBasedPtFareParams germany = DistanceBasedPtFareParams.GERMAN_WIDE_FARE_2024;
+		germany.setTransactionPartner("Deutschlandtarif");
+		germany.setDescription("Deutschlandtarif");
+		germany.setOrder(3);
+
+		ptFareConfigGroup.addParameterSet(rvr);
+		ptFareConfigGroup.addParameterSet(eezy);
+		ptFareConfigGroup.addParameterSet(germany);
+
+		//use upper bounds
+		ptFareConfigGroup.setApplyUpperBound(true);
+		ptFareConfigGroup.setUpperBoundFactor(1.5);
 	}
 
 
@@ -254,7 +277,7 @@ public final class ScenarioUtils {
 		controler.addOverridingModule(new IntermodalTripFareCompensatorsModule());
 
 		// additional analysis output
-		//controler.addOverridingModule(new LinkPaxVolumesAnalysisModule());
+		controler.addOverridingModule(new LinkPaxVolumesAnalysisModule());
 		controler.addOverridingModule(new PtStop2StopAnalysisModule());
 
 		controler.addOverridingModule(new AbstractModule() {
@@ -279,12 +302,10 @@ public final class ScenarioUtils {
 			}
 		});
 
-
 		log.info("Adding money event analysis");
 
 		//analyse PersonMoneyEvents
 		controler.addOverridingModule(new PersonMoneyEventsAnalysisModule());
-
 		//this is needed for  the parking cost
 		controler.addOverridingModule(new ParkingCostModule());
 		// bicycle contrib
