@@ -23,18 +23,13 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.prepare.AssignPersonAttributes;
-import org.matsim.prepare.BicyclePolicies;
-import org.matsim.prepare.PrepareOpenPopulation;
-import org.matsim.prepare.ScenarioCutOut;
-import org.matsim.run.policies.KlimaTaler;
-import org.matsim.run.policies.PtFlatrate;
-import org.matsim.run.policies.ReduceSpeed;
-import org.matsim.run.policies.SchoolRoadsClosure;
+import org.matsim.prepare.*;
+import org.matsim.run.policies.*;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 import javax.annotation.Nullable;
@@ -133,19 +128,15 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 		if (schoolClosure) {
 			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-
 			// street in front of Mosaikschule
 			listOfSchoolLinks.add(Id.createLinkId("353353080004r"));
 			listOfSchoolLinks.add(Id.createLinkId("353353080004f"));
-
-
-
 			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
 		}
 
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
-            AssignPersonAttributes.assigningDifferentCitizenship(scenario, shp);
+			new MigrantMapper(scenario.getPopulation(), "/Users/gregorr/Downloads/gladbeck_stadtbezirke_osm_25832/gladbeck_stadtbezirke_osm_25832.shp", "Name", scenario.getConfig().global().getCoordinateSystem().toString());
         }
 
         if (!policies.isEmpty()) {
@@ -183,6 +174,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
                 bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
             }
         });
+
+		if (cyclingCourse) {
+			MigrantBicycleChoiceHandler migrantBicycleChoiceHandler= new MigrantBicycleChoiceHandler(controler.getScenario().getPopulation());
+			addCyclingMigrants(controler, migrantBicycleChoiceHandler);
+		}
 
 
 		if (ptFlat !=0 || cityWidePtFlat) {
@@ -239,6 +235,16 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 				addEventHandlerBinding().toInstance(ptFlatrate);
 				addControlerListenerBinding().toInstance(ptFlatrate);
 				new PersonMoneyEventsAnalysisModule();
+			}
+		});
+	}
+	
+	public static void addCyclingMigrants(Controler controler, MigrantBicycleChoiceHandler migrantBicycleChoiceHandler ) {
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				addEventHandlerBinding().toInstance(migrantBicycleChoiceHandler);
+				addControlerListenerBinding().toInstance(migrantBicycleChoiceHandler);
 			}
 		});
 	}

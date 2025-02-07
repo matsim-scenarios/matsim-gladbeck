@@ -6,6 +6,8 @@ import org.matsim.api.core.v01.population.Person;
 
 public class GladbeckUtils{
     private GladbeckUtils(){} // do not instantiate
+    public static final String MIGRANT = "migrant";
+
 
 
     public static void setPersonToDifferentCitizenship(Person person) {
