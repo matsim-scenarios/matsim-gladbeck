@@ -137,7 +137,6 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
 			new MigrantMapper(scenario.getPopulation(), "/Users/gregorr/Downloads/gladbeck_stadtbezirke_osm_25832/gladbeck_stadtbezirke_osm_25832.shp", "Name", scenario.getConfig().global().getCoordinateSystem().toString());
-
         }
 
         if (!policies.isEmpty()) {

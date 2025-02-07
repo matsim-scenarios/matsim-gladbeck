@@ -30,7 +30,7 @@ public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler,
         migrantDepartures = new LinkedList<>();
         migrants = new LinkedList<>();
         for(Person p : population.getPersons().values()){
-            if(p.getAttributes().getAsMap().containsKey("migrant") && p.getAttributes().getAttribute("migrant").equals(true)) migrants.add(p.getId());
+            if(p.getAttributes().getAsMap().containsKey(GladbeckUtils.MIGRANT) && p.getAttributes().getAttribute(GladbeckUtils.MIGRANT).equals(true)) migrants.add(p.getId());
         }
     }
 
@@ -39,7 +39,7 @@ public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler,
         migrants = new LinkedList<>();
         Population population = PopulationUtils.readPopulation(populationPath);
         for(Person p : population.getPersons().values()){
-            if(p.getAttributes().getAsMap().containsKey("migrant") && p.getAttributes().getAttribute("migrant").equals(true)) migrants.add(p.getId());
+            if(p.getAttributes().getAsMap().containsKey(GladbeckUtils.MIGRANT) && p.getAttributes().getAttribute(GladbeckUtils.MIGRANT).equals(true)) migrants.add(p.getId());
         }
     }
 
@@ -48,7 +48,10 @@ public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler,
         if(personDepartureEvent.getLegMode().equals(TransportMode.bike) && migrants.contains(personDepartureEvent.getPersonId())) {
             migrantDepartures.add(new PersonScoreEvent(personDepartureEvent.getTime(), personDepartureEvent.getPersonId(), -10000.0, "punishment_for_cycling"));
         }
-        // TODO TransportMode.bike
+        // this is here for the test
+        if (personDepartureEvent.getLegMode().equals("bicycle") && migrants.contains(personDepartureEvent.getPersonId())) {
+            migrantDepartures.add(new PersonScoreEvent(personDepartureEvent.getTime(), personDepartureEvent.getPersonId(), -10000.0, "punishment_for_cycling"));
+        }
     }
 
     @Override

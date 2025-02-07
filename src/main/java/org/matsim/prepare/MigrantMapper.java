@@ -215,7 +215,7 @@ public class MigrantMapper {
         for(var e : migrantProbabilityMap.entrySet()){
             double r = e.getValue();
             boolean isMigrant = rand.nextInt(1000) < r*1000;
-            pop.getPersons().get(e.getKey()).getAttributes().putAttribute("migrant", isMigrant);
+            pop.getPersons().get(e.getKey()).getAttributes().putAttribute(GladbeckUtils.MIGRANT, isMigrant);
 //            pop.getPersons().get(e.getKey()).getAttributes().putAttribute("subpopulation", "migrant");
             if (isMigrant) totalMigrants++;
             //TODO DEBUG
