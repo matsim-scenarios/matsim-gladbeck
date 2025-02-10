@@ -94,22 +94,21 @@ public class RunGladbeckScenario extends MATSimApplication {
     @Override
     protected Config prepareConfig(Config config) {
 
+        //every config option from the rvr project
+        ScenarioUtils.prepareConfig(config, sample, false);
+
+        //bike policies
         if (!policies.isEmpty() && !shp.isDefined()) {
             throw new RuntimeException("A geo filter is required to apply policy changes to the network. Please add a path to a shape file by using the --shp option");
         }
 
-
-        // so we don´t use the rvr accessEgressModeToLinkPlusTimeConstant
-        config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink);
-
+        //scenario wide pt flat
         if (scenarioWidePtFlat) {
             config.scoring().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
         }
 
         // this is needed for the school closure case
         config.network().setTimeVariantNetwork(true);
-
-        ScenarioUtils.prepareConfig(config, sample, false);
 
         return config;
     }
@@ -178,7 +177,6 @@ public class RunGladbeckScenario extends MATSimApplication {
                 bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
             }
         }); */
-
 
         if (ptFlat != 0 || cityWidePtFlat) {
             List<Id<Person>> agentsLivingInGladbeck = new ArrayList<>();
