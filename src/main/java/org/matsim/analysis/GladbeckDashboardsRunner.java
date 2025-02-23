@@ -81,7 +81,6 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
         HbefaRoadTypeMapping roadTypeMapping = OsmHbefaMapping.build();
         roadTypeMapping.addHbefaMappings(scenario.getNetwork());
 
-
         prepareVehicleTypesForEmissionAnalysis(scenario);
 
         //overwrite outputs with adapted files

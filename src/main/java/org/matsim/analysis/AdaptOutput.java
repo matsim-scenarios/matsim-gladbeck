@@ -44,7 +44,7 @@ public class AdaptOutput implements MATSimAppCommand {
 
 //		copy original config file
         File inputConfigFile = new File(globFile(Path.of(dir), "*output_config.xml").toString());
-        Path targetConfigPath = Path.of(inputConfigFile.getPath().split(".xml")[0] + "_withZonalSystemParams_withTravelTimeCalculatorParam.xml");
+        Path targetConfigPath = Path.of(inputConfigFile.getPath().split(".xml")[0] + "_withTravelTimeCalculatorParam.xml");
         copyFile(targetConfigPath, inputConfigFile);
 
 //		comment out config params which produce errors
