@@ -25,7 +25,7 @@ import picocli.CommandLine;
 
 import java.nio.file.Path;
 
-public class GladbeckDashboardsRunner  implements MATSimAppCommand {
+public class GladbeckDashboardsRunner implements MATSimAppCommand {
 
     @CommandLine.Mixin
     private ShpOptions shp;
@@ -41,7 +41,7 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
         SimWrapper sw = SimWrapper.create(config);
         SimWrapperConfigGroup simwrapperCfg = ConfigUtils.addOrGetModule(config, SimWrapperConfigGroup.class);
 
-        if (shp.isDefined()){
+        if (shp.isDefined()) {
             simwrapperCfg.defaultParams().shp = shp.getShapeFile().toString();
         }
 
@@ -71,9 +71,9 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
         Scenario scenario = ScenarioUtils.loadScenario(dummyConfig);
 
         //set track manually to path as it is not included in HBEFA mapping
-        for (Link link: scenario.getNetwork().getLinks().values()) {
+        for (Link link : scenario.getNetwork().getLinks().values()) {
             String type = (String) link.getAttributes().getAttribute("type");
-            if (type != null &&type.equals("track")) {
+            if (type != null && type.equals("track")) {
                 link.getAttributes().putAttribute("type", "path");
             }
         }
@@ -118,7 +118,7 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
                         VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
                     }
                     case TransportMode.ride -> {
-						//ignore ride, the mode routed on network, but then teleported
+                        //ignore ride, the mode routed on network, but then teleported
                         VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
                         VehicleUtils.setHbefaTechnology(engineInformation, AVERAGE);
                         VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
@@ -132,7 +132,8 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
                         VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
                         VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
                     }
-                    default -> throw new IllegalArgumentException("does not know how to handle vehicleType " + type.getId().toString());
+                    default ->
+                            throw new IllegalArgumentException("does not know how to handle vehicleType " + type.getId().toString());
                 }
             }
         }
@@ -147,7 +148,7 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
         final String HBEFA_2020_PATH = "https://svn.vsp.tu-berlin.de/repos/public-svn/3507bb3997e5657ab9da76dbedbb13c9b5991d3e/0e73947443d68f95202b71a156b337f7f71604ae/";
         final String HBEFA_FILE_COLD_DETAILED = HBEFA_2020_PATH + "82t7b02rc0rji2kmsahfwp933u2rfjlkhfpi2u9r20.enc";
         final String HBEFA_FILE_WARM_DETAILED = HBEFA_2020_PATH + "944637571c833ddcf1d0dfcccb59838509f397e6.enc";
-        final String HBEFA_FILE_COLD_AVERAGE = HBEFA_2020_PATH + "r9230ru2n209r30u2fn0c9rn20n2rujkhkjhoewt84202.enc" ;
+        final String HBEFA_FILE_COLD_AVERAGE = HBEFA_2020_PATH + "r9230ru2n209r30u2fn0c9rn20n2rujkhkjhoewt84202.enc";
         final String HBEFA_FILE_WARM_AVERAGE = HBEFA_2020_PATH + "7eff8f308633df1b8ac4d06d05180dd0c5fdf577.enc";
 
         EmissionsConfigGroup eConfig = ConfigUtils.addOrGetModule(config, EmissionsConfigGroup.class);
@@ -158,7 +159,6 @@ public class GladbeckDashboardsRunner  implements MATSimAppCommand {
         eConfig.setHbefaTableConsistencyCheckingLevel(EmissionsConfigGroup.HbefaTableConsistencyCheckingLevel.consistent);
         eConfig.setDetailedVsAverageLookupBehavior(EmissionsConfigGroup.DetailedVsAverageLookupBehavior.tryDetailedThenTechnologyAverageThenAverageTable);
     }
-
 
 
 }

@@ -27,8 +27,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.api.core.v01.BasicLocation;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -40,12 +38,8 @@ import org.matsim.application.options.InputOptions;
 import org.matsim.application.options.OutputOptions;
 import org.matsim.application.options.SampleOptions;
 import org.matsim.application.options.ShpOptions;
-import org.matsim.contrib.analysis.time.TimeBinMap;
 import org.matsim.contrib.emissions.*;
-import org.matsim.contrib.emissions.analysis.EmissionsByPollutant;
 import org.matsim.contrib.emissions.analysis.EmissionsOnLinkEventHandler;
-import org.matsim.contrib.emissions.analysis.FastEmissionGridAnalyzer;
-import org.matsim.contrib.emissions.analysis.Raster;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -58,7 +52,6 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.scenario.ProjectionUtils;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.io.IOUtils;
 import org.matsim.vehicles.*;
 import picocli.CommandLine;
 
@@ -96,7 +89,7 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
     private static final String HBEFA_2020_PATH = "https://svn.vsp.tu-berlin.de/repos/public-svn/3507bb3997e5657ab9da76dbedbb13c9b5991d3e/0e73947443d68f95202b71a156b337f7f71604ae/";
     private static final String HBEFA_FILE_COLD_DETAILED = HBEFA_2020_PATH + "82t7b02rc0rji2kmsahfwp933u2rfjlkhfpi2u9r20.enc";
     private static final String HBEFA_FILE_WARM_DETAILED = HBEFA_2020_PATH + "944637571c833ddcf1d0dfcccb59838509f397e6.enc";
-    private static final String HBEFA_FILE_COLD_AVERAGE = HBEFA_2020_PATH + "r9230ru2n209r30u2fn0c9rn20n2rujkhkjhoewt84202.enc" ;
+    private static final String HBEFA_FILE_COLD_AVERAGE = HBEFA_2020_PATH + "r9230ru2n209r30u2fn0c9rn20n2rujkhkjhoewt84202.enc";
     private static final String HBEFA_FILE_WARM_AVERAGE = HBEFA_2020_PATH + "7eff8f308633df1b8ac4d06d05180dd0c5fdf577.enc";
 
     @CommandLine.Mixin
@@ -113,7 +106,7 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
     //dump out all pollutants. to include only a subset of pollutants, adjust!
     static List<Pollutant> pollutants2Output = Arrays.asList(Pollutant.values());
 
-    public GladbeckOfflineEmissions(){
+    public GladbeckOfflineEmissions() {
         numberFormat = NumberFormat.getInstance(Locale.US);
         numberFormat.setMaximumFractionDigits(4);
         numberFormat.setGroupingUsed(false);
@@ -137,7 +130,8 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
 
     /**
      * process output events, compute emission events and dump output.
-     * @param config input config
+     *
+     * @param config   input config
      * @param scenario object to operate on (analyze)
      * @throws IOException if output can't be written
      */
@@ -146,7 +140,7 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
         // the following is copied from the example and supplemented...
         //------------------------------------------------------------------------------
 
-        NetworkUtils.writeNetwork(scenario.getNetwork(), output.getPath( "emissionNetwork.xml.gz").toString());
+        NetworkUtils.writeNetwork(scenario.getNetwork(), output.getPath("emissionNetwork.xml.gz").toString());
 
         final String eventsFile = input.getEventsPath();
 
@@ -156,12 +150,12 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
 
 
         EventsManager eventsManager = EventsUtils.createEventsManager();
-        AbstractModule module = new AbstractModule(){
+        AbstractModule module = new AbstractModule() {
             @Override
-            public void install(){
-                bind( Scenario.class ).toInstance(scenario);
-                bind( EventsManager.class ).toInstance( eventsManager );
-                bind( EmissionModule.class ) ;
+            public void install() {
+                bind(Scenario.class).toInstance(scenario);
+                bind(EventsManager.class).toInstance(eventsManager);
+                bind(EmissionModule.class);
             }
         };
 
@@ -206,11 +200,12 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
                 .collect(Collectors.groupingBy(category -> category, Collectors.counting()))
                 .entrySet()
                 .forEach(entry -> log.info("nr of " + VehicleUtils.getHbefaVehicleCategory(entry.getKey().getEngineInformation()) + " vehicles running on " + VehicleUtils.getHbefaEmissionsConcept(entry.getKey().getEngineInformation())
-                        +" = " + entry.getValue() + " (equals " + (100.0d * ((double) entry.getValue()) / ((double) totalVehicles)) + "% overall)"));
+                        + " = " + entry.getValue() + " (equals " + (100.0d * ((double) entry.getValue()) / ((double) totalVehicles)) + "% overall)"));
     }
 
     /**
      * set all input files in EmissionConfigGroup as well as input from the MATSim run.
+     *
      * @return the adjusted config
      */
     private Config prepareConfig() {
@@ -240,6 +235,7 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
 
     /**
      * changes/adds link attributes of the network in the given scenario.
+     *
      * @param scenario for which to prepare the network
      */
     private void prepareNetwork(Scenario scenario) {
@@ -261,13 +257,13 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
             VehicleUtils.setHbefaSizeClass(engineInformation, "average");
             if (scenario.getTransitVehicles().getVehicleTypes().containsKey(type.getId())) {
                 // consider transit vehicles as non-hbefa vehicles, i.e. ignore them
-                VehicleUtils.setHbefaVehicleCategory( engineInformation, HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
-            } else if (type.getId().toString().equals("car")){
+                VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+            } else if (type.getId().toString().equals("car")) {
                 VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.PASSENGER_CAR.toString());
                 VehicleUtils.setHbefaEmissionsConcept(engineInformation, "average");
-            } else if (type.getId().toString().equals("bike") || type.getId().toString().equals("bike")){
+            } else if (type.getId().toString().equals("bike") || type.getId().toString().equals("bike")) {
                 VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
-            } else if (type.getId().toString().equals("freight")){
+            } else if (type.getId().toString().equals("freight")) {
                 VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.HEAVY_GOODS_VEHICLE.toString());
                 VehicleUtils.setHbefaEmissionsConcept(engineInformation, "average");
             } else {
@@ -278,10 +274,11 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
 
     /**
      * dumps the output.
-     * @param linkEmissionAnalysisFile path including file name and ending (csv) for the output file containing absolute emission values per link
+     *
+     * @param linkEmissionAnalysisFile     path including file name and ending (csv) for the output file containing absolute emission values per link
      * @param linkEmissionPerMAnalysisFile path including file name and ending (csv) for the output file containing emission values per meter, per link
-     * @param network the network for which utput is createdS
-     * @param emissionsEventHandler handler holding the emission data (from events-processing)
+     * @param network                      the network for which utput is createdS
+     * @param emissionsEventHandler        handler holding the emission data (from events-processing)
      * @throws IOException if output can't be written
      */
     private void writeLinkOutput(String linkEmissionAnalysisFile, String linkEmissionPerMAnalysisFile, Network network, EmissionsOnLinkEventHandler emissionsEventHandler) throws IOException {
