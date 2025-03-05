@@ -64,7 +64,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @CommandLine.Command(
-        name = "kelheim-air-pollution",
+        name = "gladbeck-air-pollution",
         description = "processes MATSim output leveraging the emission contrib.\n" +
                 "Needs input tables from/according to HBEFA.\n" +
                 "Produces output tables (csv files) that contain emission values per link (per meter) as well as emission events.",
@@ -243,7 +243,6 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
         //do not use VspHbefaRoadTypeMapping() as it results in almost every road to mapped to "highway"!
         HbefaRoadTypeMapping roadTypeMapping = OsmHbefaMapping.build();
         roadTypeMapping.addHbefaMappings(scenario.getNetwork());
-
     }
 
 
