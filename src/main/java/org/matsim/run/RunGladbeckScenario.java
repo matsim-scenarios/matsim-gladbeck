@@ -23,6 +23,8 @@ import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.network.NetworkChangeEvent;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
@@ -109,6 +111,7 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         // this is needed for the school closure case
         config.network().setTimeVariantNetwork(true);
+        config.network().setChangeEventsInputFile("/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v.3.0/networkChangeEventsGladbeck.xml.gz");
 
         return config;
     }
