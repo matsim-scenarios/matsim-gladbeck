@@ -117,6 +117,7 @@ public final class ScenarioUtils {
 		SwissRailRaptorConfigGroup swissRailRaptorConfigGroup = ConfigUtils.addOrGetModule(config, SwissRailRaptorConfigGroup.class);
 
 		// because vsp default reasons
+		//this seems to cause issues with the cut out
 		config.facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.onePerActivityLinkInPlansFile);
 
 		// someone wished to have an easy option to remove all intermodal functionality, so remove it from config or switch off
