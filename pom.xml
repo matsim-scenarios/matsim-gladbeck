@@ -10,7 +10,7 @@
 		<!-- <version>15.0</version> -->
 
 		<!-- PR-labelled release -->
-		<version>2025.0-PR3784</version>
+		<version>2025.0-PR3712</version>
 
 		<!-- snapshot == not recommended: rather use PR-labelled release!-->
 		<!--		<version>2025.0-SNAPSHOT</version>-->

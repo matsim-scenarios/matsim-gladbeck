@@ -6,6 +6,7 @@ import org.matsim.application.prepare.scenario.CreateScenarioCutOut;
 public class CreateScenarioCutOutExample {
 
     public static void main(String[] args) {
+        //this was created by using PR3788
         String[] inputScenario = new String[]{
                 "--shp-crs",
                 "EPSG:25832",
@@ -20,19 +21,20 @@ public class CreateScenarioCutOutExample {
                 "--events",
                 "/Users/gregorr/Volumes/math-cluster/matsim-metropole-ruhr/calibration-2.0/calibration-2.0-3pct-new/runs/007/007.output_events.xml.gz",
                 "--output-network",
-                "/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v.3.0/networkGladbeck.xml.gz",
+                "gladbeck-v3.0-networkGladbeck.xml.gz",
                 "--output-network-change-events",
-                "/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v.3.0/networkChangeEventsGladbeck.xml.gz",
+                "gladbeck-v3.0-networkChangeEventsGladbeck.xml.gz",
                 "--output-population",
-                "/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v.3.0/populationGladbeck.xml.gz",
+                "gladbeck-v3.0-populationGladbeck.xml.gz",
                 "--output-facilities",
-                "/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v.3.0/facilitiesGladbeck.xml.gz",
+                "gladbeck-v3.0-facilitiesGladbeck.xml.gz",
                 "--input-crs",
                 "EPSG:25832",
                 "--network-modes",
                 "bike,car",
                 "--clean-modes",
-                "freight,truck8t,truck18t,truck26t,truck40t,ride"
+                "freight,truck8t,truck18t,truck26t,truck40t,ride",
+                "--keep-capacities"
         };
 
         if (args.length == 0) {
