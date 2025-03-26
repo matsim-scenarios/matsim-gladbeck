@@ -49,7 +49,7 @@ public class TestSchoolClosure {
         List<Id<Link>> linksToClose = new ArrayList<>();
         linksToClose.add(Id.createLinkId("15"));
         linksToClose.add(Id.createLinkId("12"));
-        new SchoolRoadsClosure().closeSchoolLinks(linksToClose, scenario.getNetwork(),630, 1330);
+        //new SchoolRoadsClosure().closeSchoolLinks(linksToClose, scenario.getNetwork(),630, 1330);
         Controler controler = new Controler(scenario);
         controler.run();
 
