@@ -49,7 +49,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--pathToDistricts", description = "path to shape file with city districts")
 	private String pathToDistricts;
 
-	@CommandLine.Option(names = "--schoolClosure", defaultValue = "SchoolRoadsClosure.SchoolClosure.no", description = "Measures to ban car on certain links")
+	@CommandLine.Option(names = "--schoolClosure", description = "Measures to ban car on certain links")
 	private Set<SchoolRoadsClosure.SchoolClosure> schoolClosure = new HashSet<>();
 
 	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h in a zone")
