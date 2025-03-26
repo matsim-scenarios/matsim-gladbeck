@@ -46,8 +46,11 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
 	private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
-	@CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
-	boolean schoolClosure;
+	@CommandLine.Option(names = "--pathToDistricts", description = "path to shape file with city districts")
+	private String pathToDistricts;
+
+	@CommandLine.Option(names = "--schoolClosure", defaultValue = "SchoolRoadsClosure.SchoolClosure.no", description = "Measures to ban car on certain links")
+	private Set<SchoolRoadsClosure.SchoolClosure> schoolClosure = new HashSet<>();
 
 	@CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h in a zone")
 	boolean slowSpeedZone;
@@ -126,17 +129,13 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 			ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
 		}
 
-		if (schoolClosure) {
-			List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-			// street in front of Mosaikschule
-			listOfSchoolLinks.add(Id.createLinkId("353353080004r"));
-			listOfSchoolLinks.add(Id.createLinkId("353353080004f"));
-			new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
+		if (!schoolClosure.isEmpty()) {
+			new SchoolRoadsClosure().closeSchoolLinks(schoolClosure, scenario.getNetwork(), 800, 1700);
 		}
 
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
-			new MigrantMapper(scenario.getPopulation(), "/Users/gregorr/Downloads/gladbeck_stadtbezirke_osm_25832/gladbeck_stadtbezirke_osm_25832.shp", "Name", scenario.getConfig().global().getCoordinateSystem().toString());
+			new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString());
         }
 
         if (!policies.isEmpty()) {
