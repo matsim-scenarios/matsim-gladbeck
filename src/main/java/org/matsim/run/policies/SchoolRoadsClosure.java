@@ -101,6 +101,86 @@ public class SchoolRoadsClosure {
             //josefSchule
             listOfSchoolLinks.add(Id.createLinkId("2246773700002f"));
             listOfSchoolLinks.add(Id.createLinkId("2246773700002r"));
+
+            //Ingeborg Drewitz
+            listOfSchoolLinks.add(Id.createLinkId("3211239560008r"));
+            listOfSchoolLinks.add(Id.createLinkId("3211239560008f"));
+            listOfSchoolLinks.add(Id.createLinkId("3211239550004r"));
+            listOfSchoolLinks.add(Id.createLinkId("3211239550004f"));
+            listOfSchoolLinks.add(Id.createLinkId("369047460003r"));
+            listOfSchoolLinks.add(Id.createLinkId("369047460003f"));
+            //Pestalozzi Schule
+            listOfSchoolLinks.add(Id.createLinkId("389130530005r"));
+            listOfSchoolLinks.add(Id.createLinkId("389130530005f"));
+            //Jordan Mai Schule
+            listOfSchoolLinks.add(Id.createLinkId("1337273760011r"));
+            listOfSchoolLinks.add(Id.createLinkId("1337273760011f"));
+            listOfSchoolLinks.add(Id.createLinkId("1337273690005f"));
+            listOfSchoolLinks.add(Id.createLinkId("1337273690005r"));
+            //Heisenberg
+            listOfSchoolLinks.add(Id.createLinkId("1666275060002f"));
+            listOfSchoolLinks.add(Id.createLinkId("1556231900005f"));
+            listOfSchoolLinks.add(Id.createLinkId("1556231740006f"));
+            listOfSchoolLinks.add(Id.createLinkId("1666275080002f"));
+            listOfSchoolLinks.add(Id.createLinkId("1867905930004f"));
+            listOfSchoolLinks.add(Id.createLinkId("1556231720011r"));
+            listOfSchoolLinks.add(Id.createLinkId("1556231720011f"));
+            //Ratsgymnasium
+            listOfSchoolLinks.add(Id.createLinkId("2245411250008r"));
+            listOfSchoolLinks.add(Id.createLinkId("2245411250008f"));
+            listOfSchoolLinks.add(Id.createLinkId("357392350003f"));
+            listOfSchoolLinks.add(Id.createLinkId("357392350003r"));
+            listOfSchoolLinks.add(Id.createLinkId("1718120700011r"));
+            listOfSchoolLinks.add(Id.createLinkId("1718120700011f"));
+            //Lamberti Schule
+            listOfSchoolLinks.add(Id.createLinkId("357392390002f"));
+            listOfSchoolLinks.add(Id.createLinkId("357392390002r"));
+            listOfSchoolLinks.add(Id.createLinkId("511410650001f"));
+            listOfSchoolLinks.add(Id.createLinkId("511410650001r"));
+            listOfSchoolLinks.add(Id.createLinkId("511410650000r"));
+            listOfSchoolLinks.add(Id.createLinkId("511410650000f"));
+            //Wittinger Schule
+            listOfSchoolLinks.add(Id.createLinkId("3254028960007f"));
+            listOfSchoolLinks.add(Id.createLinkId("3254028960007r"));
+            listOfSchoolLinks.add(Id.createLinkId("1781204710002f"));
+            listOfSchoolLinks.add(Id.createLinkId("1781204710002r"));
+            //Werner von Siemens
+            listOfSchoolLinks.add(Id.createLinkId("358770500002f"));
+            listOfSchoolLinks.add(Id.createLinkId("358770500002r"));
+            listOfSchoolLinks.add(Id.createLinkId("358770510002r"));
+            listOfSchoolLinks.add(Id.createLinkId("358770510002f"));
+            //Anne Frank
+            listOfSchoolLinks.add(Id.createLinkId("1157881300007r"));
+            listOfSchoolLinks.add(Id.createLinkId("1157881300007f"));
+            // Riesener Gymnasium
+            listOfSchoolLinks.add(Id.createLinkId("1474460420007f"));
+            listOfSchoolLinks.add(Id.createLinkId("6127701840009f"));
+            //Walddorfschule
+            listOfSchoolLinks.add(Id.createLinkId("5156341260028r"));
+            listOfSchoolLinks.add(Id.createLinkId("5156341260028f"));
+            //Mosaikschule
+            listOfSchoolLinks.add(Id.createLinkId("5156341260014f"));
+            listOfSchoolLinks.add(Id.createLinkId("5156341260014r"));
+            listOfSchoolLinks.add(Id.createLinkId("381870670005f"));
+            listOfSchoolLinks.add(Id.createLinkId("381870670005r"));
+            //Roßheidschule
+            listOfSchoolLinks.add(Id.createLinkId("1337273250028r"));
+            listOfSchoolLinks.add(Id.createLinkId("1337273250028f"));
+            //Südparkschule
+            listOfSchoolLinks.add(Id.createLinkId("3301414430001r"));
+            listOfSchoolLinks.add(Id.createLinkId("3301414430001f"));
+            //SChulzentrum
+            listOfSchoolLinks.add(Id.createLinkId("3301414430001f"));
+            listOfSchoolLinks.add(Id.createLinkId("6774113930003r"));
+            listOfSchoolLinks.add(Id.createLinkId("330026670013f"));
+            listOfSchoolLinks.add(Id.createLinkId("330026670013r"));
+            //Albert Schweitzer Schule
+            listOfSchoolLinks.add(Id.createLinkId("115596910006f"));
+            listOfSchoolLinks.add(Id.createLinkId("115596910006r"));
+            listOfSchoolLinks.add(Id.createLinkId("115596910009f"));
+            listOfSchoolLinks.add(Id.createLinkId("115596910009r"));
+
+
         }
 
         if (schoolClosure.contains(SchoolClosure.testCase)) {
