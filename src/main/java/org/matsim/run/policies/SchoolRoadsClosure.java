@@ -75,7 +75,7 @@ public class SchoolRoadsClosure {
      * Defines wich schools are closed.
      */
     @SuppressWarnings("checkstyle:OneTopLevelClass")
-    public enum SchoolClosure {mosaikSchool, allSchools}
+    public enum SchoolClosure {mosaikSchool, allSchools, testCase}
 
 
     private static Collection<Id<Link>> wichLinks(Set<SchoolClosure> schoolClosure) {
@@ -101,8 +101,14 @@ public class SchoolRoadsClosure {
             //josefSchule
             listOfSchoolLinks.add(Id.createLinkId("2246773700002f"));
             listOfSchoolLinks.add(Id.createLinkId("2246773700002r"));
-
         }
+
+        if (schoolClosure.contains(SchoolClosure.testCase)) {
+            listOfSchoolLinks.add(Id.createLinkId("15"));
+            listOfSchoolLinks.add(Id.createLinkId("12"));
+        }
+
+
         return listOfSchoolLinks;
     }
 
