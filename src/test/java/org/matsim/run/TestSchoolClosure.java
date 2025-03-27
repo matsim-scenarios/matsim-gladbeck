@@ -23,13 +23,11 @@ import org.matsim.examples.ExamplesUtils;
 import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.testcases.MatsimTestUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.matsim.run.policies.SchoolRoadsClosure.SchoolClosure.testCase;
 
 public class TestSchoolClosure {
 
@@ -46,10 +44,7 @@ public class TestSchoolClosure {
         config.controler().setLastIteration(0);
         config.network().setTimeVariantNetwork(true);
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        List<Id<Link>> linksToClose = new ArrayList<>();
-        linksToClose.add(Id.createLinkId("15"));
-        linksToClose.add(Id.createLinkId("12"));
-        new SchoolRoadsClosure().closeSchoolLinks(linksToClose, scenario.getNetwork(),630, 1330);
+        new SchoolRoadsClosure().closeSchoolLinks(Collections.singleton(testCase), scenario.getNetwork(),630, 1330);
         Controler controler = new Controler(scenario);
         controler.run();
 
