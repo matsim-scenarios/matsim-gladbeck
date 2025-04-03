@@ -120,7 +120,7 @@
 	</module>
 	<module name="subtourModeChoice">
 		<param name="chainBasedModes" value="car,bike"/>
-		<param name="modes" value="car,ride,pt,pt_intermodal_allowed,bike,walk"/>
+		<param name="modes" value="car,pt,pt_intermodal_allowed,bike,walk"/>
 		<param name="considerCarAvailability" value="true"/>
 		<param name="behavior" value="betweenAllAndFewerConstraints"/>
 		<param name="probaForRandomSingleTripMode" value="0.5" />
