@@ -25,7 +25,7 @@
 	</module>
 	<module name="plans">
 		<param name="inputPlansFile"
-			   value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v3.0/gladbeck-v3.0-populationGladbeck.xml.gz"/>
+			   value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v3.0/gladbeck-v3.0-plansGladbeck.xml.gz"/>
 		<param name="removingUnnecessaryPlanAttributes" value="true"/>
 	</module>
 	<module name="vehicles">
@@ -143,13 +143,13 @@
 				<param name="mode" value="car" />
 				<!-- We use -3 to fit the approximate value for Berlin -->
 				<param name="dailyMonetaryConstant" value="-3" />
-				<param name="constant" value="0.56" />
+				<param name="constant" value="0.4672381384047785" />
 				<param name="marginalUtilityOfTraveling_util_hr" value="0.0" />
 				<param name="monetaryDistanceRate" value="-0.000149" />
 			</parameterset>
 			<parameterset type="modeParams" >
 				<param name="mode" value="ride" />
-				<param name="constant" value="0.27" />
+				<param name="constant" value="0.30761262714150983" />
 				<!-- alpha=2, gamma=0.0 -->
 				<!-- adapted in code -->
 				<param name="marginalUtilityOfTraveling_util_hr" value="0" />
@@ -160,12 +160,12 @@
 				<param name="mode" value="pt" />
 				<!-- 49 EUR Ticket  -->
 				<param name="dailyMonetaryConstant" value="-2.35" />
-				<param name="constant" value="-0.38" />
+				<param name="constant" value="-2.0999630928681943" />
 				<param name="marginalUtilityOfTraveling_util_hr" value="0.0" />
 			</parameterset>
 			<parameterset type="modeParams" >
 				<param name="mode" value="bike" />
-				<param name="constant" value="0.33" />
+				<param name="constant" value="0.012609906475758208" />
 				<param name="marginalUtilityOfTraveling_util_hr" value="-5.0" />
 			</parameterset>
 			<parameterset type="modeParams" >
