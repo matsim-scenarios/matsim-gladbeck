@@ -6,7 +6,6 @@ import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.application.MATSimApplication;
@@ -23,7 +22,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MultimodalLinkChooser;
@@ -175,8 +173,21 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
         });
 
 		if (cyclingCourse) {
-			MigrantBicycleChoiceHandler migrantBicycleChoiceHandler= new MigrantBicycleChoiceHandler(controler.getScenario().getPopulation());
-			addCyclingMigrants(controler, migrantBicycleChoiceHandler);
+
+			controler.addOverridingModule(new AbstractModule() {
+				public void install() {
+                    try {
+                        this.addEventHandlerBinding().toInstance(BikePunishmentEventHandler.class.newInstance());
+                    } catch (InstantiationException e) {
+                        throw new RuntimeException(e);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+			});
+
+			//MigrantBicycleChoiceHandler migrantBicycleChoiceHandler= new MigrantBicycleChoiceHandler(controler.getScenario().getPopulation());
+			//addCyclingMigrants(controler, migrantBicycleChoiceHandler);
 		}
 
 
