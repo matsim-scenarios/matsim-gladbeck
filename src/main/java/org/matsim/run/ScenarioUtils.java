@@ -19,6 +19,7 @@ import org.matsim.contrib.bicycle.BicycleModule;
 import org.matsim.contrib.vsp.pt.fare.DistanceBasedPtFareParams;
 import org.matsim.contrib.vsp.pt.fare.FareZoneBasedPtFareParams;
 import org.matsim.contrib.vsp.pt.fare.PtFareConfigGroup;
+import org.matsim.contrib.vsp.pt.fare.PtFareModule;
 import org.matsim.contrib.vsp.scenario.SnzActivities;
 import org.matsim.contrib.vsp.scoring.RideScoringParamsFromCarParams;
 import org.matsim.core.config.Config;
@@ -276,6 +277,9 @@ public final class ScenarioUtils {
 		controler.addOverridingModule(new PtIntermodalRoutingModesModule());
 		// throw additional score or money events if pt is combined with bike or car in the same trip
 		controler.addOverridingModule(new IntermodalTripFareCompensatorsModule());
+
+		controler.addOverridingModule(new PtStop2StopAnalysisModule());
+		controler.addOverridingModule(new PtFareModule());
 
 		// additional analysis output
 		controler.addOverridingModule(new LinkPaxVolumesAnalysisModule());
