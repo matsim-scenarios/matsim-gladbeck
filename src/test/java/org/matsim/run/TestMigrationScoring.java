@@ -11,7 +11,10 @@ import org.matsim.api.core.v01.events.PersonScoreEvent;
 import org.matsim.api.core.v01.events.handler.PersonScoreEventHandler;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.StrategyConfigGroup;
+import org.matsim.core.config.groups.SubtourModeChoiceConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -71,6 +74,43 @@ public class TestMigrationScoring {
         }
 
     }
+    @Test
+    public void testModeChoice() throws IOException {
+
+        String inputPath = String.valueOf(ExamplesUtils.getTestScenarioURL("equil-mixedTraffic"));
+        Config config = ConfigUtils.loadConfig(inputPath + "config-with-mode-vehicles.xml");
+        config.controler().setLastIteration(60);
+        config.controler().setOutputDirectory("output/MigrantTest/");
+        config.global().setNumberOfThreads(1);
+        config.qsim().setNumberOfThreads(1);
+        config.changeMode().setModes(new String[]{TransportMode.car, "bicycle"});
+
+        StrategyConfigGroup.StrategySettings myNewStraSetting = new StrategyConfigGroup.StrategySettings();
+        myNewStraSetting.setStrategyName("ChangeTripMode");
+        myNewStraSetting.setWeight(1.0);
+        myNewStraSetting.setDisableAfter(40);
+
+        config.strategy().clearStrategySettings();
+        config.strategy().addStrategySettings(myNewStraSetting);
+
+        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        Scenario scenario = ScenarioUtils.loadScenario(config);
+        createMigrantAgent(scenario.getPopulation());
+
+        Controler controler = new Controler(scenario);
+
+        MigrantBicycleChoiceHandler myMigrantChoiceHandler = new MigrantBicycleChoiceHandler(scenario.getPopulation());
+        //addCyclingMigrants(controler, myMigrantChoiceHandler);
+        MigrantTestListener handler = new MigrantTestListener();
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addEventHandlerBinding().toInstance(handler);
+            }
+        });
+        controler.run();
+    }
+
 
     final void createMigrantAgent(Population population) {
        for (Person person: population.getPersons().values()) {

@@ -3,6 +3,7 @@ package org.matsim.prepare;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.PersonDepartureEvent;
+import org.matsim.api.core.v01.events.PersonMoneyEvent;
 import org.matsim.api.core.v01.events.PersonScoreEvent;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
 import org.matsim.api.core.v01.population.Person;
@@ -17,6 +18,7 @@ import java.util.List;
  * This handler will give all migrants in the population (persons with attribute {@code "migrant": true}) a massive negative score when using bikes.
  * Migrant thus will not use the bike, when this handler is used.
  */
+@Deprecated
 public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler, AfterMobsimListener {
     private List<PersonScoreEvent> migrantDepartures;
     private List<Id<Person>> migrants;
@@ -59,6 +61,7 @@ public class MigrantBicycleChoiceHandler implements PersonDepartureEventHandler,
 
         for(PersonScoreEvent personScoreEvent : migrantDepartures) {
             afterMobsimEvent.getServices().getEvents().processEvent(personScoreEvent);
+            afterMobsimEvent.getServices().getEvents().processEvent(new PersonMoneyEvent(personScoreEvent.getTime(), personScoreEvent.getPersonId(), -10.0));
         }
     }
 
