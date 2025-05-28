@@ -71,7 +71,7 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
 	boolean cyclingCourse;
 
-	@CommandLine.Option(names = "--cyclingCourseSample", defaultValue = "16", description = "measures to increase the attractiveness of cycling for migrants")
+	@CommandLine.Option(names = "--cyclingCourseSample", defaultValue = "0", description = "measures to increase the attractiveness of cycling for migrants")
 	int cyclingCourseSample;
 
 
