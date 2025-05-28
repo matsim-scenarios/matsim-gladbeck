@@ -71,6 +71,10 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 	@CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
 	boolean cyclingCourse;
 
+	@CommandLine.Option(names = "--cyclingCourseSample", defaultValue = "16", description = "measures to increase the attractiveness of cycling for migrants")
+	int cyclingCourseSample;
+
+
 	@CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
 	double klimaTalerMoneyAmount;
 
@@ -133,8 +137,13 @@ public class RunGladbeckScenario extends RunMetropoleRuhrScenario {
 
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
-			new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString());
+			new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), null);
         }
+
+		if (cyclingCourse && cyclingCourseSample > 0) {
+			log.info("adding migrants: "+ cyclingCourseSample +"for cycling");
+			new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), cyclingCourseSample);
+		}
 
         if (!policies.isEmpty()) {
 			//changing the network for the policy

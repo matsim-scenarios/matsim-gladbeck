@@ -51,7 +51,7 @@ public class MigrantMapper {
      * @param districtIdentifierName Identifying attribute of the polygons of the shapefile (e.g. Name)
      * @param CRS Coordinate Reference System (e.g. EPSG:25832)
      */
-    public MigrantMapper(Population population, String cityDistrictSHPPath, String districtIdentifierName, String CRS){
+    public MigrantMapper(Population population, String cityDistrictSHPPath, String districtIdentifierName, String CRS, Integer sample) {
         pop = population;
         ShpOptions shp = new ShpOptions(Path.of(cityDistrictSHPPath), CRS, StandardCharsets.UTF_8);
         ShpOptions.Index index = shp.createIndex(CRS, districtIdentifierName);
@@ -62,7 +62,7 @@ public class MigrantMapper {
             migrantProbabilityMap.put(p.getId(), computeRefugeeProbability(p));
         }
 
-        assignMigrantMapToPopulation();
+        assignMigrantMapToPopulation(sample);
     }
 
     /**
@@ -209,7 +209,7 @@ public class MigrantMapper {
      * NOTE: This is a non-deterministic method. It uses the computed probabilities.
      * @return the amount of migrants in this population
      */
-    private void assignMigrantMapToPopulation(){
+    private void assignMigrantMapToPopulation(Integer sample) {
         int totalMigrants = 0;
         Random rand = MatsimRandom.getRandom();
         for(var e : migrantProbabilityMap.entrySet()){
@@ -218,6 +218,7 @@ public class MigrantMapper {
             pop.getPersons().get(e.getKey()).getAttributes().putAttribute(GladbeckUtils.MIGRANT, isMigrant);
 //            pop.getPersons().get(e.getKey()).getAttributes().putAttribute("subpopulation", "migrant");
             if (isMigrant) totalMigrants++;
+            if (sample != null && totalMigrants >= sample) break;
             //TODO DEBUG
             if (isMigrant){
                 district_migrant_amounts.putIfAbsent(filter.getCategoryKeyOfPerson(pop.getPersons().get(e.getKey())), 0);
