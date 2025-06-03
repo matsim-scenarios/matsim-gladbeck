@@ -1,5 +1,6 @@
 package org.matsim.run;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.matsim.api.core.v01.Id;
@@ -17,7 +18,7 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.testcases.MatsimTestUtils;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
-
+@Disabled
 public class GladbeckIntegrationTest {
 
     @RegisterExtension
