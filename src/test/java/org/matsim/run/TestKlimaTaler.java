@@ -2,6 +2,7 @@ package org.matsim.run;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.locationtech.jts.util.Assert;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -15,6 +16,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.facilities.ActivityFacility;
@@ -48,10 +50,9 @@ public class TestKlimaTaler {
         scenario.getPopulation().addPerson(person);
         Controler controler = new Controler(scenario);
 
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.routing().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(),
-                10.0);
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(scenario.getNetwork(), 10.0);
 
-        addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator);
+        addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator, config, 10.0);
         KlimaTalerTestListener handler = new KlimaTalerTestListener();
         controler.addOverridingModule(new AbstractModule() {
             @Override
@@ -78,30 +79,18 @@ public class TestKlimaTaler {
         config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controler controler = new Controler(scenario);
-        Map<Id, Queue<Coord>> actCoords = new HashMap<>();
-        for (ActivityFacility activity : controler.getScenario().getActivityFacilities().getFacilities().values()) {
-            Queue<Coord> queue = new LinkedList<>();
-            queue.add(activity.getCoord());
-            actCoords.put(activity.getId(), queue);
-        }
 
-        KlimaTaler klimaTaler = new KlimaTaler(config.routing().getBeelineDistanceFactors().get(TransportMode.walk), scenario.getNetwork(),
-                10.0);
-        addKlimaTaler(controler, klimaTaler);
-        KlimaTalerTestListener handler = new KlimaTalerTestListener();
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                addEventHandlerBinding().toInstance(handler);
-            }
-        });
+
+        KlimaTaler klimaTaler = new KlimaTaler(scenario.getNetwork(), 10.0);
+        addKlimaTaler(controler, klimaTaler, config, 10.0);
+
 
         controler.run();
 
-        //Assert that money amount is correct
-        PersonMoneyEvent event = handler.klimaTalerPtMoneyEvents.iterator().next();
-        assertEquals( "1", event.getPersonId().toString(), "wrong person");
-        assertEquals( 0.60496, event.getAmount(), 0., "wrong amount");
+        Scenario testForReading = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        new PopulationReader(testForReading).readFile(config.controller().getOutputDirectory() + "output_plans.xml.gz");
+        //Score without klima Taler is 27.468448990195423
+        Assert.isTrue(testForReading.getPopulation().getPersons().get(Id.createPersonId("1")).getSelectedPlan().getScore() > 27.468448990195423);
     }
 
     @Test
@@ -114,37 +103,21 @@ public class TestKlimaTaler {
         config.qsim().setNumberOfThreads(1);
         config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        Set<String> modes = new HashSet<>();
-        modes.add(TransportMode.walk);
-        for (Link l : scenario.getNetwork().getLinks().values()) {
-            l.setAllowedModes(modes);
-        }
+
         Population population = scenario.getPopulation();
         createWalkingAgent(population);
         Controler controler = new Controler(scenario);
-        Map<Id, Queue<Coord>> actCoords = new HashMap<>();
-        for (ActivityFacility activity : controler.getScenario().getActivityFacilities().getFacilities().values()) {
-            Queue<Coord> queue = new LinkedList<>();
-            queue.add(activity.getCoord());
-            actCoords.put(activity.getId(), queue);
-        }
-        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(config.routing().getBeelineDistanceFactors().get(TransportMode.walk),
-                scenario.getNetwork(), 10.0);
-        addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator);
-        KlimaTalerTestListener handler = new KlimaTalerTestListener();
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                addEventHandlerBinding().toInstance(handler);
-            }
-        });
 
+        KlimaTaler teleportedModeTravelDistanceEvaluator = new KlimaTaler(scenario.getNetwork(), 10.0);
+        addKlimaTaler(controler, teleportedModeTravelDistanceEvaluator, config, 10.0);
 
         controler.run();
-        //Assert that money amount is correct
-        PersonMoneyEvent event = handler.klimaTalerWalkMoneyEvents.iterator().next();
-        assertEquals( "walkingAgent", event.getPersonId().toString(), "wrong person");
-        assertEquals( 0.45759999999999995, event.getAmount(), 0., "wrong amount");
+
+        Scenario testForReading = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        new PopulationReader(testForReading).readFile(config.controller().getOutputDirectory() + "output_plans.xml.gz");
+
+        //Score without klima Taler is 29.460006520575348
+        Assert.isTrue(testForReading.getPopulation().getPersons().get(Id.createPersonId("walkingAgent")).getSelectedPlan().getScore() > 29.460006520575348);
 
     }
 
@@ -164,7 +137,6 @@ public class TestKlimaTaler {
         plan1.addActivity(education);
         walkingAgent.addPlan(plan1);
         population.addPerson(walkingAgent);
-        //Assert that money amount is correct
     }
 
     class KlimaTalerTestListener implements PersonMoneyEventHandler {
