@@ -18,8 +18,7 @@ import org.matsim.application.prepare.population.DownSamplePopulation;
 import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
-import org.matsim.contrib.vsp.pt.fare.DistanceBasedPtFareParams;
-import org.matsim.contrib.vsp.pt.fare.PtFareConfigGroup;
+import org.matsim.contrib.vsp.pt.fare.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.VspExperimentalConfigGroup;
@@ -35,6 +34,7 @@ import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.PtFlatrate;
 import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.run.policies.SchoolRoadsClosure;
+import org.matsim.run.policies.freePt.PtFareModuleWithFreePt;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import picocli.CommandLine;
 
@@ -185,38 +185,51 @@ public class RunGladbeckScenario extends MATSimApplication {
         }); */
 
         if (ptFlat != 0 || cityWidePtFlat) {
-            List<Id<Person>> agentsLivingInGladbeck = new ArrayList<>();
-            List<Id<Person>> agentsWithPtFlat = new ArrayList<>();
-            HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, controler.getScenario().getConfig().global().getCoordinateSystem(), controler.getScenario().getPopulation());
-
-            for (Person person : controler.getScenario().getPopulation().getPersons().values()) {
-                if (homeLocationFilter.test(controler.getScenario().getPopulation().getPersons().get(person.getId()))) {
-                    agentsLivingInGladbeck.add(person.getId());
-                }
-            }
-
-            if (cityWidePtFlat) {
-                agentsWithPtFlat.addAll(agentsLivingInGladbeck);
-            } else {
-                for (int ii = 0; ii < ptFlat; ii++) {
-                    Random generator = MatsimRandom.getRandom();
-                    Object[] values = agentsLivingInGladbeck.toArray();
-                    var randomPerson = (Id<Person>) values[generator.nextInt(values.length)];
-                    agentsWithPtFlat.add(randomPerson);
-                    agentsLivingInGladbeck.remove(randomPerson);
-                }
-            }
-            log.info("adding pt flat." + agentsWithPtFlat.size() + " agents will pay no pt cost");
-            try {
-                writeOutAgents(agentsWithPtFlat);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            addPtFlat(controler, new PtFlatrate(agentsWithPtFlat, controler.getConfig().scoring().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
+            addFreePt(controler);
 
         }
+        //set the vsp defaults checking level to abort, so that we can catch errors in the config
         controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
 
+    }
+
+    /**
+     * This method adds the free public transport to the controler.
+     * It creates a list of agents that will have free public transport
+     * If cityWidePtFlat is true, all agents living in Gladbeck will have free public transport.
+     * If ptFlat is set to a value greater than 0, that many random agents living in Gladbeck will have free public transport.
+     * @param controler the controller to add the free public transport
+     */
+    private void addFreePt(Controler controler) {
+        List<Id<Person>> agentsLivingInGladbeck = new ArrayList<>();
+        List<Id<Person>> agentsWithPtFlat = new ArrayList<>();
+        HomeLocationFilter homeLocationFilter = new HomeLocationFilter(shp, controler.getScenario().getConfig().global().getCoordinateSystem(), controler.getScenario().getPopulation());
+
+        for (Person person : controler.getScenario().getPopulation().getPersons().values()) {
+            if (homeLocationFilter.test(controler.getScenario().getPopulation().getPersons().get(person.getId()))) {
+                agentsLivingInGladbeck.add(person.getId());
+            }
+        }
+
+        if (cityWidePtFlat) {
+            agentsWithPtFlat.addAll(agentsLivingInGladbeck);
+        } else {
+            for (int ii = 0; ii < ptFlat; ii++) {
+                Random generator = MatsimRandom.getRandom();
+                Object[] values = agentsLivingInGladbeck.toArray();
+                var randomPerson = (Id<Person>) values[generator.nextInt(values.length)];
+                agentsWithPtFlat.add(randomPerson);
+                agentsLivingInGladbeck.remove(randomPerson);
+            }
+        }
+        log.info("adding pt flat." + agentsWithPtFlat.size() + " agents will pay no pt cost");
+        try {
+            writeOutAgents(agentsWithPtFlat);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        controler.addOverridingModule(new PtFareModuleWithFreePt(agentsWithPtFlat));
     }
 
 
@@ -241,18 +254,6 @@ public class RunGladbeckScenario extends MATSimApplication {
             public void install() {
                 addEventHandlerBinding().toInstance(klimaTaler);
                 addControlerListenerBinding().toInstance(klimaTaler);
-                new PersonMoneyEventsAnalysisModule();
-            }
-        });
-    }
-
-
-    public static void addPtFlat(Controler controler, PtFlatrate ptFlatrate) {
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                addEventHandlerBinding().toInstance(ptFlatrate);
-                addControlerListenerBinding().toInstance(ptFlatrate);
                 new PersonMoneyEventsAnalysisModule();
             }
         });
