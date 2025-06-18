@@ -2,7 +2,6 @@ package org.matsim.run;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.checkerframework.checker.units.qual.C;
 import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -19,15 +18,14 @@ import org.matsim.application.prepare.population.DownSamplePopulation;
 import org.matsim.application.prepare.population.ExtractHomeCoordinates;
 import org.matsim.application.prepare.population.FixSubtourModes;
 import org.matsim.application.prepare.population.XYToLinks;
+import org.matsim.contrib.vsp.pt.fare.DistanceBasedPtFareParams;
+import org.matsim.contrib.vsp.pt.fare.PtFareConfigGroup;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.groups.RoutingConfigGroup;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.core.network.NetworkChangeEvent;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.router.MultimodalLinkChooser;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
@@ -107,7 +105,7 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         //scenario wide pt flat
         if (scenarioWidePtFlat) {
-            config.scoring().getModes().get(TransportMode.pt).setDailyMonetaryConstant(0.0);
+            modifyConfigForScenarioWideFreePt(config);
         }
 
         // this is needed for the school closure case
@@ -117,6 +115,8 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         return config;
     }
+
+
 
     @Override
     protected void prepareScenario(Scenario scenario) {
@@ -134,7 +134,6 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         if (schoolClosure) {
             List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-
             // street in front of Mosaikschule
             listOfSchoolLinks.add(Id.createLinkId("353353080004r"));
             listOfSchoolLinks.add(Id.createLinkId("353353080004f"));
@@ -259,4 +258,34 @@ public class RunGladbeckScenario extends MATSimApplication {
         }
         writer.close();
     }
+
+    /**
+     * This method modifies the config to allow free public transport for all agents.
+     * It removes all fare parameters from the config and adds a new fare config group with free pt.
+     * The fare is set to zero for all distance classes.
+     * @param config the config to modify
+     */
+    private static void modifyConfigForScenarioWideFreePt(Config config) {
+        //remove all fare parameters from the config
+        config.removeModule(PtFareConfigGroup.MODULE_NAME);
+        //add a new fare config group with free pt
+        PtFareConfigGroup ptFareConfigGroup = ConfigUtils.addOrGetModule(config, PtFareConfigGroup.class);
+        //only add distance based fare parameters that are free
+        DistanceBasedPtFareParams freeDistanceBasedPt = new DistanceBasedPtFareParams();
+        freeDistanceBasedPt.setTransactionPartner("freePt");
+        freeDistanceBasedPt.setDescription("freePt");
+        //freeDistanceBasedPt.setFareZoneShp("./nrwArea/dvg2bld_nw.shp");
+        DistanceBasedPtFareParams.DistanceClassLinearFareFunctionParams eezyFareFunction = freeDistanceBasedPt.getOrCreateDistanceClassFareParams(Double.POSITIVE_INFINITY);
+        eezyFareFunction.setFareIntercept(0.0);
+        eezyFareFunction.setFareSlope(0.0);
+        freeDistanceBasedPt.setOrder(1);
+        ptFareConfigGroup.addParameterSet(freeDistanceBasedPt);
+        //use upper bounds
+        ptFareConfigGroup.setApplyUpperBound(true);
+        ptFareConfigGroup.setUpperBoundFactor(0.0);
+    }
+
+
 }
+
+
