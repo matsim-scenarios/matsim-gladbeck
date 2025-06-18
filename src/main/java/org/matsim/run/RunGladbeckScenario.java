@@ -22,6 +22,7 @@ import org.matsim.contrib.vsp.pt.fare.DistanceBasedPtFareParams;
 import org.matsim.contrib.vsp.pt.fare.PtFareConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.VspExperimentalConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.MatsimRandom;
@@ -167,9 +168,9 @@ public class RunGladbeckScenario extends MATSimApplication {
     @Override
     protected void prepareControler(Controler controler) {
 
+        super.prepareControler(controler);
         ScenarioUtils.prepareControler(controler);
 
-        //controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
         if (klimaTalerMoneyAmount != 0.0) {
             log.info("add Klima taler with money amount: " + klimaTalerMoneyAmount);
             KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
@@ -214,7 +215,8 @@ public class RunGladbeckScenario extends MATSimApplication {
             addPtFlat(controler, new PtFlatrate(agentsWithPtFlat, controler.getConfig().scoring().getModes().get(TransportMode.pt).getDailyMonetaryConstant()));
 
         }
-        super.prepareControler(controler);
+        controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
+
     }
 
 
