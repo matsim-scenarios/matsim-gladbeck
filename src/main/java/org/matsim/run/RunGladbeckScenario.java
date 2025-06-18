@@ -55,12 +55,10 @@ public class RunGladbeckScenario extends MATSimApplication {
     @CommandLine.Mixin
     SampleOptions sample = new SampleOptions(10, 1);
 
-    @CommandLine.Option(names = "--schoolClosure", defaultValue = "false", description = "measures to ban car on certain links")
-    boolean schoolClosure;
-
+    @CommandLine.Option(names = "--schoolClosure", description = "Measures to ban car on certain links")
+    private Set<SchoolRoadsClosure.SchoolClosure> schoolClosure = new HashSet<>();
     @CommandLine.Option(names = "--tempo30Zone", defaultValue = "false", description = "measures to reduce car speed to 30 km/h in a zone")
     boolean slowSpeedZone;
-
     @CommandLine.Option(names = "--tempo30Streets", defaultValue = "false", description = "measures to reduce car speed to 30 km/h on links definded by a shape file")
     boolean slowSpeedOnDefinedLinks;
     @CommandLine.Option(names = "--simplePtFlat", defaultValue = "false", description = "measures to allow everyone to have free pt")
@@ -118,7 +116,6 @@ public class RunGladbeckScenario extends MATSimApplication {
     }
 
 
-
     @Override
     protected void prepareScenario(Scenario scenario) {
 
@@ -133,12 +130,8 @@ public class RunGladbeckScenario extends MATSimApplication {
             ReduceSpeed.implementPushMeasuresByModifyingNetworkInArea(scenario.getNetwork(), ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(shp.getShapeFile().toString())));
         }
 
-        if (schoolClosure) {
-            List<Id<Link>> listOfSchoolLinks = new ArrayList<>();
-            // street in front of Mosaikschule
-            listOfSchoolLinks.add(Id.createLinkId("353353080004r"));
-            listOfSchoolLinks.add(Id.createLinkId("353353080004f"));
-            new SchoolRoadsClosure().closeSchoolLinks(listOfSchoolLinks, scenario.getNetwork(), 800, 1700);
+        if (!schoolClosure.isEmpty()) {
+            new SchoolRoadsClosure().closeSchoolLinks(schoolClosure, scenario.getNetwork(), 800, 1700);
         }
 
         if (cyclingCourse) {
@@ -176,13 +169,6 @@ public class RunGladbeckScenario extends MATSimApplication {
             KlimaTaler klimaTaler = new KlimaTaler(controler.getScenario().getNetwork(), klimaTalerMoneyAmount);
             addKlimaTaler(controler, klimaTaler, controler.getConfig(), klimaTalerMoneyAmount);
         }
-
-        /*controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                bind(MultimodalLinkChooser.class).to(NearestLinkChooser.class);
-            }
-        }); */
 
         if (ptFlat != 0 || cityWidePtFlat) {
             addFreePt(controler);
