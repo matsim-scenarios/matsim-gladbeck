@@ -184,8 +184,8 @@ public class SchoolRoadsClosure {
         }
 
         if (schoolClosure.contains(SchoolClosure.testCase)) {
-            listOfSchoolLinks.add(Id.createLinkId("15"));
-            listOfSchoolLinks.add(Id.createLinkId("12"));
+            listOfSchoolLinks.add(Id.createLinkId("173"));
+            listOfSchoolLinks.add(Id.createLinkId("176"));
         }
 
 

@@ -20,9 +20,11 @@ import org.matsim.run.policies.SchoolRoadsClosure;
 import org.matsim.testcases.MatsimTestUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.matsim.run.policies.SchoolRoadsClosure.SchoolClosure.testCase;
 
 public class TestSchoolClosure {
 
@@ -44,7 +46,7 @@ public class TestSchoolClosure {
         List<Id<Link>> linksToClose = new ArrayList<>();
         linksToClose.add(Id.createLinkId("173"));
         linksToClose.add(Id.createLinkId("176"));
-        new SchoolRoadsClosure().closeSchoolLinks(linksToClose, scenario.getNetwork(),10, 1330);
+        new SchoolRoadsClosure().closeSchoolLinks(Collections.singleton(testCase), scenario.getNetwork(),10, 1330);
         Controler controler = new Controler(scenario);
         controler.run();
 
