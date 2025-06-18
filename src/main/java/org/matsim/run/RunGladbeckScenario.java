@@ -218,8 +218,15 @@ public class RunGladbeckScenario extends MATSimApplication {
     }
 
 
-    //simple method to add the klima taler to the controler
-    //public as it is used in the test
+    /**
+     * This method adds the klima taler to the controler.
+     * Public as it is used in the test
+     * It sets the monetary distance rate for walk and pt based on the klima taler money amount.*
+     * @param controler        the controler to add the klima taler to
+     * @param klimaTaler       the klima taler to add
+     * @param config           the config to use for the klima taler
+     * @param klimaTalerMoneyAmount the amount of money to give to a person to use pt, walk and bike
+     */
     public static void addKlimaTaler(Controler controler, KlimaTaler klimaTaler, Config config, double klimaTalerMoneyAmount ) {
 
         //use the monetary distance rate to calculate the money amount for the klima taler for walk and pt
@@ -237,6 +244,7 @@ public class RunGladbeckScenario extends MATSimApplication {
         });
     }
 
+
     public static void addPtFlat(Controler controler, PtFlatrate ptFlatrate) {
         controler.addOverridingModule(new AbstractModule() {
             @Override
@@ -248,6 +256,12 @@ public class RunGladbeckScenario extends MATSimApplication {
         });
     }
 
+    /**
+     * This method writes out the ids of the agents that have free public transport.
+     * The ids are written to a file called agentsWithFreePt.tsv.
+     * @param listOfIds the list of ids of the agents that have free public transport
+     * @throws IOException if there is an error writing to the file
+     */
     private static void writeOutAgents(List<Id<Person>> listOfIds) throws IOException {
         BufferedWriter writer = IOUtils.getBufferedWriter("agentsWithFreePt.tsv");
         writer.write("Id");
