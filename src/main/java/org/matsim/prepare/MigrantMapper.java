@@ -9,6 +9,8 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.application.options.ShpOptions;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -19,10 +21,10 @@ import java.util.*;
  * Used in GlaMoBi-Project, containing migrant data for Gladbeck.
  */
 public class MigrantMapper {
+    Logger logger = LoggerFactory.getLogger(MigrantMapper.class);
     private int migrants;
     private Population pop;
     private final HomeMultipleLocationFilter filter;
-
     private final Map<Id<Person>, Double> migrantProbabilityMap;
 
     //TODO DEBUG
@@ -58,7 +60,9 @@ public class MigrantMapper {
         migrantProbabilityMap = new HashMap<>();
 
         for(Person p : pop.getPersons().values()){
-            migrantProbabilityMap.put(p.getId(), computeRefugeeProbability(p));
+            if (p.getAttributes().getAttribute("subpopulation").equals("person")) {
+                migrantProbabilityMap.put(p.getId(), computeRefugeeProbability(p));
+            }
         }
 
         assignMigrantMapToPopulation(sample);
@@ -157,51 +161,12 @@ public class MigrantMapper {
             };
         }
 
-        //DestinationProbability
-        destProbability = checkIfActivitiesAreRelevant(p);
-
         //Probability summary
         //TODO Create an actual stochastic procedure
         //Giving regionProbability 3-times the weight because it is the most reliable and important value
-        if(destProbability != -1) return (incomeProbability + ageProbability + 3*regionProbability + destProbability) / 6;
         return (incomeProbability + ageProbability + 3*regionProbability) / 5;
     }
 
-    /**
-     * Checks if any of the agents activities is next to an important social facility.
-     * @return The probability of this agent being a migrant using activities as hints
-     */
-    private double checkIfActivitiesAreRelevant(Person p){
-        //TODO Make this more useful
-        //This was the ground structure for the osm-activity-tracking, it uses some of the facility mentioned in this document:
-        //https://stadt-gladbeck.de/Rathaus_Politik/Dokumente/angebots-bersicht_august2019.pdf
-        Location[] locations = new Location[]{
-                new Location("Büro für Interkulturelle Arbeit", new Coord(361436.57,5712850.89), 0.5),
-                new Location("Jugendmigrationsdienst", new Coord(367983.90,5708550.07), 0.5),
-                new Location("Amt Für Soziales Und Wohnen", new Coord(360574.17,5715060.27), 0.5),
-                new Location("Jobcenter", new Coord(360610.97,5715105.85), 0.5)
-        };
-
-        List<Double> probabilities = new LinkedList<>();
-
-        for(PlanElement a : p.getSelectedPlan().getPlanElements()){
-            if(a instanceof Activity){
-                for(Location l : locations){
-                    if(NetworkUtils.getEuclideanDistance(((Activity) a).getCoord(), l.coord) < 50){ //TODO Remove annoying z-coord warnings
-                        probabilities.add(l.migrantProbability);
-                    }
-                }
-            }
-        }
-
-        if(probabilities.isEmpty()) return -1;
-
-        double probability = 0.;
-        for(double prob : probabilities){
-            probability += prob;
-        }
-        return probability/probabilities.size();
-    }
 
     /**
      * Adds a boolean-attribute "isMigrant" to every Person of the given population.
@@ -226,6 +191,9 @@ public class MigrantMapper {
             //DEBUG END<
         }
         this.migrants = totalMigrants;
+        logger.info(totalMigrants + " migrants were assigned to the population.");
+        logger.info(district_amounts + " persons in the population were assigned to a district.");
+        logger.info(district_migrant_amounts + " migrants were assigned to a district.");
     }
 
     public Map<Id<Person>, Double> getMigrantProbabilityMap(){
