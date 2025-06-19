@@ -11,6 +11,8 @@ public class GladbeckUtils {
         person.getAttributes().putAttribute("citizenship", "diffrent");
     }
 
+    public static final String MIGRANT = "migrant";
+
     public static double getShareOfDiffrentCitizenship() {
         // this number  is derived from:  respos/shared-svn/projects/GlaMoBi/data/sozio-demographischen_Daten/2023-18-04_Auswertung_Staatsangehoerigkeiten.xlsx
         return 0.19;

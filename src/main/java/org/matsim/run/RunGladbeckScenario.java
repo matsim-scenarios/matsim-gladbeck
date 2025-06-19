@@ -28,6 +28,7 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
+import org.matsim.prepare.MigrantMapper;
 import org.matsim.prepare.PrepareOpenPopulation;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.ReduceSpeed;
@@ -65,12 +66,16 @@ public class RunGladbeckScenario extends MATSimApplication {
     int ptFlat;
     @CommandLine.Option(names = "--cityWidePtFlat", defaultValue = "false", description = "measures to allow every resident in Gladbeck to have free pt")
     boolean cityWidePtFlat;
-    @CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
-    boolean cyclingCourse;
     @CommandLine.Option(names = "--klimaTaler", defaultValue = "0.0", description = "amount of money to give to a person to use pt, walk and bike")
     double klimaTalerMoneyAmount;
+    @CommandLine.Option(names = "--cyclingCourse", defaultValue = "false", description = "measures to increase the ")
+    boolean cyclingCourse;
+    @CommandLine.Option(names = "--cyclingCourseSample", defaultValue = "0", description = "measures to increase the attractiveness of cycling for migrants")
+    int cyclingCourseSample;
     @CommandLine.Mixin
     private ShpOptions shp;
+    @CommandLine.Option(names = "--pathToDistricts", description = "path to shape file with city districts")
+    private String pathToDistricts;
     @CommandLine.Option(names = {"--policy", "--p"})
     private Set<BicyclePolicies.Policy> policies = new HashSet<>();
     @CommandLine.Option(names = {"--bicycle-freespeed", "--bf"})
@@ -134,7 +139,12 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
-            AssignPersonAttributes.assigningDifferentCitizenship(scenario, shp);
+            new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), null);
+        }
+
+        if (cyclingCourse && cyclingCourseSample > 0) {
+            log.info("adding migrants: "+ cyclingCourseSample +"for cycling");
+            new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), cyclingCourseSample);
         }
 
         if (!policies.isEmpty()) {
