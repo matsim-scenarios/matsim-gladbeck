@@ -182,8 +182,8 @@ public class RunGladbeckScenario extends MATSimApplication {
             addFreePt(controler);
 
         }
-        //set the vsp defaults checking level to abort, so that we can catch errors in the config
-        controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.abort);
+        //set the vsp defaults checking level to warn because of the climate coin
+        controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.warn);
 
     }
 
