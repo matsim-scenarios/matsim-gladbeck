@@ -113,9 +113,11 @@ public class RunGladbeckScenario extends MATSimApplication {
         // this is needed for the school closure case
         config.network().setTimeVariantNetwork(true);
         if (sample.getSample() == 0.03) {
+            log.info("using network change events for 3% sample");
             config.network().setChangeEventsInputFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v3.0/gladbeck-v3.0-networkChangeEventsGladbeck3pct.xml.gz");
         }
         if (sample.getSample() == 0.10) {
+            log.info("using network change events for 10% sample");
             config.network().setChangeEventsInputFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v3.0/gladbeck-v3.0-networkChangeEventsGladbeck10pct.xml.gz");
         }
 
