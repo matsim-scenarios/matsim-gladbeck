@@ -52,7 +52,7 @@ public class RunGladbeckScenario extends MATSimApplication {
     private static final Logger log = LogManager.getLogger(RunGladbeckScenario.class);
 
     @CommandLine.Mixin
-    SampleOptions sample = new SampleOptions(10, 1);
+    SampleOptions sample = new SampleOptions(10, 3, 1);
 
     @CommandLine.Option(names = "--schoolClosure", description = "Measures to ban car on certain links")
     private Set<SchoolRoadsClosure.SchoolClosure> schoolClosure = new HashSet<>();
