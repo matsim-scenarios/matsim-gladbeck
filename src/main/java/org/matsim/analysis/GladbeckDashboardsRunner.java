@@ -36,6 +36,9 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
             "dashboard for", required = true)
     private Path runDirectory;
 
+    @CommandLine.Option(names = "--ref-data", description = "ref data path", required = true)
+    String refDataPath;
+
     @Override
     public Integer call() throws Exception {
         //need to rename network change events
@@ -57,7 +60,7 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
 
         simwrapperCfg.defaultDashboards = SimWrapperConfigGroup.Mode.enabled;
         sw.addDashboard(new OverviewDashboard());
-        sw.addDashboard(new TripDashboard("src/main/resources/gladbeck_mode_share.csv", null, null));
+        sw.addDashboard(new TripDashboard(refDataPath, null, null));
         sw.addDashboard(new TrafficDashboard());
         sw.addDashboard(new TrafficCountsDashboard());
         sw.addDashboard(new StuckAgentDashboard());
