@@ -23,7 +23,9 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import picocli.CommandLine;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class GladbeckDashboardsRunner implements MATSimAppCommand {
 
@@ -36,8 +38,16 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
 
     @Override
     public Integer call() throws Exception {
+        //need to rename network change events
+
+        if (Files.exists(Path.of(runDirectory + "/output_gladbeck-v3.0-3pct.output_change_events.xml.gz"))) {
+            Files.move(Path.of(runDirectory + "/output_gladbeck-v3.0-3pct.output_change_events.xml.gz"), Path.of(runDirectory + "/output_gladbeck-v3.0-3pct.output_networkChangeEvents.xml.gz"), StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            System.out.println("Source file does not exist");
+        }
         Path configPath = ApplicationUtils.matchInput("config.xml", runDirectory);
         Config config = ConfigUtils.loadConfig(configPath.toString());
+        config.network().setChangeEventsInputFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/input/v3.0/gladbeck-v3.0-networkChangeEventsGladbeck3pct.xml.gz");
         SimWrapper sw = SimWrapper.create(config);
         SimWrapperConfigGroup simwrapperCfg = ConfigUtils.addOrGetModule(config, SimWrapperConfigGroup.class);
 
@@ -70,10 +80,10 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
 
         Scenario scenario = ScenarioUtils.loadScenario(dummyConfig);
 
-        //set track manually to path as it is not included in HBEFA mapping
+        //set track or footway manually to path as it is not included in HBEFA mapping
         for (Link link : scenario.getNetwork().getLinks().values()) {
             String type = (String) link.getAttributes().getAttribute("type");
-            if (type != null && type.equals("track")) {
+            if (type != null && type.equals("track") || type != null && type.equals("footway")) {
                 link.getAttributes().putAttribute("type", "path");
             }
         }
@@ -132,6 +142,32 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
                         VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
                         VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
                     }
+
+                    case "truck18t" -> {
+                        VehicleUtils.setHbefaVehicleCategory(engineInformation,HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+                        VehicleUtils.setHbefaTechnology(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
+                    }
+                    case "truck26t" -> {
+                        VehicleUtils.setHbefaVehicleCategory(engineInformation,HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+                        VehicleUtils.setHbefaTechnology(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
+                    }
+                    case "truck40t" -> {
+                        VehicleUtils.setHbefaVehicleCategory(engineInformation,HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+                        VehicleUtils.setHbefaTechnology(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
+                    }
+                    case "truck8t" -> {
+                        VehicleUtils.setHbefaVehicleCategory(engineInformation,HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+                        VehicleUtils.setHbefaTechnology(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaSizeClass(engineInformation, AVERAGE);
+                        VehicleUtils.setHbefaEmissionsConcept(engineInformation, AVERAGE);
+                    }
+
                     default ->
                             throw new IllegalArgumentException("does not know how to handle vehicleType " + type.getId().toString());
                 }
