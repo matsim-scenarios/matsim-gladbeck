@@ -159,18 +159,6 @@ public class RunGladbeckScenario extends MATSimApplication {
             //changing the network for the policy
             BicyclePolicies.applyPolicyChanges(scenario.getNetwork(), shp.getGeometry(), policies, bicycleFreedspeed);
             //delete routes from plans and linkId and facility id from activity
-            for (var person : scenario.getPopulation().getPersons().values()) {
-                var plan = person.getSelectedPlan();
-                person.getPlans().clear();
-                PopulationUtils.resetRoutes(plan);
-                for (var element : plan.getPlanElements()) {
-                    if (element instanceof Activity act) {
-                        act.setFacilityId(null);
-                        act.setLinkId(null);
-                    }
-                }
-                person.addPlan(plan);
-            }
         }
     }
 
