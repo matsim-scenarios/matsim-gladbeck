@@ -100,7 +100,7 @@ public class RunGladbeckScenario extends MATSimApplication {
         //make sure the config for the 10 pct is used when the sample is 10%
         if (sample.getSample() == 0.1) {
             log.warn("Using 10% sample");
-            config = ConfigUtils.loadConfig(String.format("./scenarios/gladbeck-%s/input/gladbeck-%s-10pct.config.xml", VERSION, VERSION));
+            log.warn("make sure to specify the correct config file for the 10% sample");
         }
 
         //every config option from the rvr project
