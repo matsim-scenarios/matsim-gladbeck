@@ -6,7 +6,6 @@ import org.matsim.analysis.personMoney.PersonMoneyEventsAnalysisModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.application.MATSimApplication;
 import org.matsim.application.analysis.HomeLocationFilter;
@@ -24,11 +23,9 @@ import org.matsim.core.config.groups.VspExperimentalConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.prepare.AssignPersonAttributes;
 import org.matsim.prepare.BicyclePolicies;
-import org.matsim.prepare.MigrantMapper;
+import org.matsim.prepare.SimplifiedMigrantMapper;
 import org.matsim.prepare.PrepareOpenPopulation;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.ReduceSpeed;
@@ -154,12 +151,12 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
-            new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), null);
+            new SimplifiedMigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), null);
         }
 
         if (cyclingCourse && cyclingCourseSample > 0) {
             log.info("adding migrants: "+ cyclingCourseSample +"for cycling");
-            new MigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), cyclingCourseSample);
+            new SimplifiedMigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), cyclingCourseSample);
         }
 
         if (!policies.isEmpty()) {
