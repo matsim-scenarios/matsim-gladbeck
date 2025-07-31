@@ -84,7 +84,7 @@ public class RunGladbeckScenario extends MATSimApplication {
     }
 
     public RunGladbeckScenario() {
-        super(String.format("./scenarios/gladbeck-%s/input/gladbeck-%s-3pct.config.xml", VERSION, VERSION));
+        super(String.format("./scenarios/gladbeck-%s/input/gladbeck-%s-10pct.config.xml", VERSION, VERSION));
     }
 
     public static void main(String[] args) {
