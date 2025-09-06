@@ -37,12 +37,15 @@ public class BikePunishmentEventHandler implements PersonDepartureEventHandler {
     public void handleEvent(PersonDepartureEvent personDepartureEvent) {
 
 
-        if (personDepartureEvent.getLegMode().contains(TransportMode.bike)) {
 
-            if (scenario.getPopulation().getPersons().get(personDepartureEvent.getPersonId()).getAttributes().getAttribute(GladbeckUtils.MIGRANT).equals(true)) {
-                PersonMoneyEvent personMoneyEvent = new PersonMoneyEvent(personDepartureEvent.getTime(), personDepartureEvent.getPersonId(), -100, "bike", null, null);
-                eventsManager.processEvent(personMoneyEvent);
-            }
+
+        if (personDepartureEvent.getLegMode().contains(TransportMode.bike)) {
+           if (scenario.getPopulation().getPersons().get(personDepartureEvent.getPersonId()).getAttributes().getAttribute(GladbeckUtils.MIGRANT) != null) {
+               if (scenario.getPopulation().getPersons().get(personDepartureEvent.getPersonId()).getAttributes().getAttribute(GladbeckUtils.MIGRANT).equals(true)) {
+                   PersonMoneyEvent personMoneyEvent = new PersonMoneyEvent(personDepartureEvent.getTime(), personDepartureEvent.getPersonId(), -100, "bike", null, null);
+                   eventsManager.processEvent(personMoneyEvent);
+               }
+           }
         }
 
     }
