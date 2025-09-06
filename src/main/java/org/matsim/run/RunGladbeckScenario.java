@@ -27,6 +27,7 @@ import org.matsim.core.utils.io.IOUtils;
 import org.matsim.prepare.BicyclePolicies;
 import org.matsim.prepare.SimplifiedMigrantMapper;
 import org.matsim.prepare.PrepareOpenPopulation;
+import org.matsim.run.policies.BikePunishmentEventHandler;
 import org.matsim.run.policies.KlimaTaler;
 import org.matsim.run.policies.ReduceSpeed;
 import org.matsim.run.policies.SchoolRoadsClosure;
@@ -182,6 +183,11 @@ public class RunGladbeckScenario extends MATSimApplication {
             addFreePt(controler);
 
         }
+
+        if (cyclingCourse && cyclingCourseSample > 0) {
+            addBikePunishmentHandler(controler);
+        }
+
         //set the vsp defaults checking level to warn because of the climate coin
         controler.getConfig().vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.warn);
 
@@ -294,6 +300,22 @@ public class RunGladbeckScenario extends MATSimApplication {
         //use upper bounds
         ptFareConfigGroup.setApplyUpperBound(true);
         ptFareConfigGroup.setUpperBoundFactor(0.0);
+    }
+
+
+    /**
+     * This method adds the bike punishment event handler to the controler.
+     * The bike punishment event handler gives all migrants in the population (persons with attribute {@code "migrant": true}) a massive negative score when using bikes.
+     * Migrant thus will not use the bike, when this handler is used.
+     * @param controler the controler to add the bike punishment event handler to
+     */
+    private static void addBikePunishmentHandler(Controler controler) {
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addEventHandlerBinding().to(BikePunishmentEventHandler.class);
+            }
+        });
     }
 
 
