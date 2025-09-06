@@ -184,7 +184,7 @@ public class RunGladbeckScenario extends MATSimApplication {
 
         }
 
-        if (cyclingCourse && cyclingCourseSample > 0) {
+        if (cyclingCourse) {
             addBikePunishmentHandler(controler);
         }
 
