@@ -150,11 +150,13 @@ public class RunGladbeckScenario extends MATSimApplication {
             new SchoolRoadsClosure().closeSchoolLinks(schoolClosure, scenario.getNetwork(), 800, 1700);
         }
 
+
+/*
         if (cyclingCourse) {
             log.info("adding different citizenship's to the agents");
             new SimplifiedMigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), null);
         }
-
+*/
         if (cyclingCourse && cyclingCourseSample > 0) {
             log.info("adding migrants: "+ cyclingCourseSample +"for cycling");
             new SimplifiedMigrantMapper(scenario.getPopulation(), pathToDistricts, "Name", scenario.getConfig().global().getCoordinateSystem().toString(), cyclingCourseSample);
