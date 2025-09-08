@@ -35,29 +35,13 @@ public class AgentsAffectedByLinkClosure implements MATSimAppCommand {
         List<Id<Vehicle>> agentsThatDroveOverLink = new ArrayList<>();
         List<Id<Link>> listOfLinks = new ArrayList<>();
 
-
         //TODO change to shape File approach
         listOfLinks.add(Id.createLinkId("5156341260014r"));
         listOfLinks.add(Id.createLinkId("5156341260014f"));
-        listOfLinks.add(Id.createLinkId("380432140001r"));
+        listOfLinks.add(Id.createLinkId("353353080004f"));
         listOfLinks.add(Id.createLinkId("380432140001f"));
-        listOfLinks.add(Id.createLinkId("381870670005f"));
-        listOfLinks.add(Id.createLinkId("381870670005r"));
-        listOfLinks.add(Id.createLinkId("353353090002f"));
-        listOfLinks.add(Id.createLinkId("353353090002r"));
+        listOfLinks.add(Id.createLinkId("353353080004r"));
 
-        //  werner von siemens schule gladbeck
-        listOfLinks.add(Id.createLinkId("358770500002f"));
-        listOfLinks.add(Id.createLinkId("358770500002r"));
-        listOfLinks.add(Id.createLinkId("358770510002r"));
-        listOfLinks.add(Id.createLinkId("358770510002r"));
-        listOfLinks.add(Id.createLinkId("358770510002f"));
-        listOfLinks.add(Id.createLinkId("1157881300007f"));
-        listOfLinks.add(Id.createLinkId("1157881300007r"));
-        listOfLinks.add(Id.createLinkId("1157881300007r"));
-        listOfLinks.add(Id.createLinkId("1157881300007r"));
-        listOfLinks.add(Id.createLinkId("481471120002f"));
-        listOfLinks.add(Id.createLinkId("481471120002r"));
 
         EventsManager manager = EventsUtils.createEventsManager();
         manager.addHandler(new AgentsThatDroveOverLink(agentsThatDroveOverLink, listOfLinks));
