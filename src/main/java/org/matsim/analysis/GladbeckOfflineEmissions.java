@@ -50,13 +50,10 @@ import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
-import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ProjectionUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.*;
 import picocli.CommandLine;
-import playground.vsp.analysis.modules.emissionsWriter.EmissionEventsWriter;
-import scala.util.parsing.combinator.testing.Str;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -118,43 +115,10 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
     @Override
     public Integer call() throws Exception {
 
-        Config config = ConfigUtils.createConfig();
-        config.vehicles().setVehiclesFile(ApplicationUtils.matchInput("allVehicles.xml.gz", input.getRunDirectory()).toAbsolutePath().toString());
-        config.network().setInputFile(ApplicationUtils.matchInput("network", input.getRunDirectory()).toAbsolutePath().toString());
-        config.transit().setTransitScheduleFile(ApplicationUtils.matchInput("transitSchedule", input.getRunDirectory()).toAbsolutePath().toString());
-        config.transit().setVehiclesFile(ApplicationUtils.matchInput("transitVehicles", input.getRunDirectory()).toAbsolutePath().toString());
-        config.global().setCoordinateSystem("EPSG:25832");
-        config.plans().setInputFile(null);
-        config.eventsManager().setNumberOfThreads(null);
-        config.eventsManager().setEstimatedNumberOfEvents(null);
-        config.global().setNumberOfThreads(1);
-
-
-        GladbeckDashboardsRunner.setEmissionsConfigs(config);
+        Config config = prepareConfig();
         Scenario scenario = ScenarioUtils.loadScenario(config);
-
-        //set track or footway manually to path as it is not included in HBEFA mapping
-        for (Link link : scenario.getNetwork().getLinks().values()) {
-            String type = (String) link.getAttributes().getAttribute("type");
-            if (type != null && type.equals("track") || type != null && type.equals("footway")) {
-                link.getAttributes().putAttribute("type", "path");
-            }
-        }
-
-        HbefaRoadTypeMapping roadTypeMapping = OsmHbefaMapping.build();
-        roadTypeMapping.addHbefaMappings(scenario.getNetwork());
-
-
-        //set track or footway manually to path as it is not included in HBEFA mapping
-        for (Link link : scenario.getNetwork().getLinks().values()) {
-            String type = (String) link.getAttributes().getAttribute("type");
-            if (type != null && type.equals("track") || type != null && type.equals("footway")) {
-                link.getAttributes().putAttribute("type", "path");
-            }
-        }
-
         prepareNetwork(scenario);
-        GladbeckDashboardsRunner.prepareVehicleTypesForEmissionAnalysis(scenario);
+        prepareVehicleTypes(scenario);
         process(config, scenario);
 
         return 0;
@@ -177,22 +141,15 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
         //------------------------------------------------------------------------------
 
         NetworkUtils.writeNetwork(scenario.getNetwork(), output.getPath("emissionNetwork.xml.gz").toString());
+
         final String eventsFile = input.getEventsPath();
+
         final String linkEmissionAnalysisFile = output.getPath("emissions_per_link.csv").toString();
         final String linkEmissionPerMAnalysisFile = output.getPath("emissions_per_link_per_m.csv").toString();
         final String vehicleTypeFile = output.getPath("emissions_vehicle_info.csv").toString();
-        final String emissionsEventsFile = output.getPath("emissions_events.xml").toString();
 
 
         EventsManager eventsManager = EventsUtils.createEventsManager();
-        playground.vsp.analysis.modules.emissionsWriter.EmissionEventsWriter emissionEventsWriterModule =
-                new playground.vsp.analysis.modules.emissionsWriter.EmissionEventsWriter(output.getPath("emissions_events.xml").toString());
-        emissionEventsWriterModule.init((MutableScenario) scenario); // ADDED: initialize with scenario
-
-        for (org.matsim.core.events.handler.EventHandler handler : emissionEventsWriterModule.getEventHandler()) {
-            eventsManager.addHandler(handler);
-        }
-
         AbstractModule module = new AbstractModule() {
             @Override
             public void install() {
@@ -215,30 +172,65 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
         log.info("Finish processing...");
         eventsManager.finishProcessing();
 
-        emissionEventsWriterModule.writeResults(String.valueOf(output.getPath("emissions.events.xml.gz"))); // ADDED
-        log.info("Emission events successfully written to " + output.getPath("emission.events.xml.gz"));
+        //we only output values for a subnetwork, if shp is defined. this speeds up vizes.
+        Network filteredNetwork;
+        if (shp.isDefined()) {
+            ShpOptions.Index index = shp.createIndex(ProjectionUtils.getCRS(scenario.getNetwork()), "_");
 
+            NetworkFilterManager manager = new NetworkFilterManager(scenario.getNetwork(), config.network());
+            manager.addLinkFilter(l -> index.contains(l.getCoord()));
 
-        // After eventsManager.finishProcessing();
-        log.info("Writing emission events to file: " + emissionsEventsFile);
-
+            filteredNetwork = manager.applyFilters();
+        } else {
+            filteredNetwork = scenario.getNetwork();
+        }
 
         log.info("write basic output");
-        writeTotal(scenario.getNetwork(), emissionsEventHandler);
+        writeTotal(filteredNetwork, emissionsEventHandler);
         writeVehicleInfo(scenario, vehicleTypeFile);
         log.info("write link output");
-        writeLinkOutput(linkEmissionAnalysisFile, linkEmissionPerMAnalysisFile, scenario.getNetwork(), emissionsEventHandler);
+        writeLinkOutput(linkEmissionAnalysisFile, linkEmissionPerMAnalysisFile, filteredNetwork, emissionsEventHandler);
 
 
         int totalVehicles = scenario.getVehicles().getVehicles().size();
         log.info("Total number of vehicles: " + totalVehicles);
 
-       /* scenario.getVehicles().getVehicles().values().stream()
+        scenario.getVehicles().getVehicles().values().stream()
                 .map(vehicle -> vehicle.getType())
                 .collect(Collectors.groupingBy(category -> category, Collectors.counting()))
                 .entrySet()
                 .forEach(entry -> log.info("nr of " + VehicleUtils.getHbefaVehicleCategory(entry.getKey().getEngineInformation()) + " vehicles running on " + VehicleUtils.getHbefaEmissionsConcept(entry.getKey().getEngineInformation())
-                        + " = " + entry.getValue() + " (equals " + (100.0d * ((double) entry.getValue()) / ((double) totalVehicles)) + "% overall)")); */
+                        + " = " + entry.getValue() + " (equals " + (100.0d * ((double) entry.getValue()) / ((double) totalVehicles)) + "% overall)"));
+    }
+
+    /**
+     * set all input files in EmissionConfigGroup as well as input from the MATSim run.
+     *
+     * @return the adjusted config
+     */
+    private Config prepareConfig() {
+        Config config = ConfigUtils.createConfig();
+        config.vehicles().setVehiclesFile(ApplicationUtils.matchInput("allVehicles.xml.gz", input.getRunDirectory()).toAbsolutePath().toString());
+        config.network().setInputFile(ApplicationUtils.matchInput("network", input.getRunDirectory()).toAbsolutePath().toString());
+        config.transit().setTransitScheduleFile(ApplicationUtils.matchInput("transitSchedule", input.getRunDirectory()).toAbsolutePath().toString());
+        config.transit().setVehiclesFile(ApplicationUtils.matchInput("transitVehicles", input.getRunDirectory()).toAbsolutePath().toString());
+        config.global().setCoordinateSystem("EPSG:25832");
+        config.plans().setInputFile(null);
+        config.eventsManager().setNumberOfThreads(null);
+        config.eventsManager().setEstimatedNumberOfEvents(null);
+        config.global().setNumberOfThreads(1);
+
+        EmissionsConfigGroup eConfig = ConfigUtils.addOrGetModule(config, EmissionsConfigGroup.class);
+        eConfig.setDetailedVsAverageLookupBehavior(EmissionsConfigGroup.DetailedVsAverageLookupBehavior.tryDetailedThenTechnologyAverageThenAverageTable);
+        eConfig.setDetailedColdEmissionFactorsFile(HBEFA_FILE_COLD_DETAILED);
+        eConfig.setDetailedWarmEmissionFactorsFile(HBEFA_FILE_WARM_DETAILED);
+        eConfig.setAverageColdEmissionFactorsFile(HBEFA_FILE_COLD_AVERAGE);
+        eConfig.setAverageWarmEmissionFactorsFile(HBEFA_FILE_WARM_AVERAGE);
+//		eConfig.setHbefaRoadTypeSource(HbefaRoadTypeSource.fromLinkAttributes);
+        eConfig.setNonScenarioVehicles(EmissionsConfigGroup.NonScenarioVehicles.abort);
+        eConfig.setWritingEmissionsEvents(true);
+        eConfig.setHbefaTableConsistencyCheckingLevel(EmissionsConfigGroup.HbefaTableConsistencyCheckingLevel.consistent);
+        return config;
     }
 
     /**
@@ -254,6 +246,30 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
     }
 
 
+    /**
+     * @param scenario scenario object for which to prepare vehicle types
+     */
+    private void prepareVehicleTypes(Scenario scenario) {
+        for (VehicleType type : scenario.getVehicles().getVehicleTypes().values()) {
+            EngineInformation engineInformation = type.getEngineInformation();
+            VehicleUtils.setHbefaTechnology(engineInformation, "average");
+            VehicleUtils.setHbefaSizeClass(engineInformation, "average");
+            if (scenario.getTransitVehicles().getVehicleTypes().containsKey(type.getId())) {
+                // consider transit vehicles as non-hbefa vehicles, i.e. ignore them
+                VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+            } else if (type.getId().toString().equals("car")) {
+                VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.PASSENGER_CAR.toString());
+                VehicleUtils.setHbefaEmissionsConcept(engineInformation, "average");
+            } else if (type.getId().toString().equals("bike") || type.getId().toString().equals("bike")) {
+                VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.NON_HBEFA_VEHICLE.toString());
+            } else if (type.getId().toString().equals("freight")) {
+                VehicleUtils.setHbefaVehicleCategory(engineInformation, HbefaVehicleCategory.HEAVY_GOODS_VEHICLE.toString());
+                VehicleUtils.setHbefaEmissionsConcept(engineInformation, "average");
+            } else {
+                throw new IllegalArgumentException("does not know how to handle vehicleType " + type.getId().toString());
+            }
+        }
+    }
 
     /**
      * dumps the output.
@@ -271,7 +287,6 @@ public class GladbeckOfflineEmissions implements MATSimAppCommand {
         log.info("Writing output...");
 
         {
-
             //dump link-based output files
             File absolutFile = new File(linkEmissionAnalysisFile);
             File perMeterFile = new File(linkEmissionPerMAnalysisFile);
