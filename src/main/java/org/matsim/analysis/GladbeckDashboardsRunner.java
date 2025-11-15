@@ -59,13 +59,14 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
         }
 
         simwrapperCfg.defaultDashboards = SimWrapperConfigGroup.Mode.enabled;
-        sw.addDashboard(new OverviewDashboard());
-        sw.addDashboard(new TripDashboard(refDataPath, null, null));
-        sw.addDashboard(new TrafficDashboard());
-        sw.addDashboard(new TrafficCountsDashboard());
-        sw.addDashboard(new StuckAgentDashboard());
+        simwrapperCfg.sampleSize = 0.03;
+        //sw.addDashboard(new OverviewDashboard());
+       // sw.addDashboard(new TripDashboard(refDataPath, null, null));
+        //sw.addDashboard(new TrafficDashboard());
+        //sw.addDashboard(new TrafficCountsDashboard());
+        //sw.addDashboard(new StuckAgentDashboard());
         sw.addDashboard(new EmissionsDashboard("EPSG:25832"));
-        sw.addDashboard(new NoiseDashboard("EPSG:25832"));
+        //sw.addDashboard(new NoiseDashboard("EPSG:25832"));
 
         setEmissionsConfigs(config);
         ConfigUtils.writeConfig(config, configPath.toString());
@@ -101,7 +102,7 @@ public class GladbeckDashboardsRunner implements MATSimAppCommand {
         new MatsimVehicleWriter(scenario.getVehicles()).writeFile(vehiclesPath);
         new MatsimVehicleWriter(scenario.getTransitVehicles()).writeFile(transitVehiclesPath);
 
-        sw.generate(runDirectory);
+        sw.generate(Path.of("/Users/gregorr/Documents/work/stuff/analysisGlaMoBi/forTrainWork/test/withDashboardRunner/"));
         sw.run(runDirectory);
 
         return 0;

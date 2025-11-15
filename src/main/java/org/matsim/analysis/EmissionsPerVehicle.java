@@ -26,6 +26,8 @@ import org.matsim.application.options.SampleOptions;
 import org.matsim.application.options.ShpOptions;
 import org.matsim.contrib.analysis.time.TimeBinMap;
 import org.matsim.contrib.emissions.EmissionModule;
+import org.matsim.contrib.emissions.HbefaRoadTypeMapping;
+import org.matsim.contrib.emissions.OsmHbefaMapping;
 import org.matsim.contrib.emissions.Pollutant;
 import org.matsim.contrib.emissions.analysis.EmissionsByVehicleTypeEventHandler;
 import org.matsim.contrib.emissions.analysis.EmissionsOnLinkEventHandler;
@@ -104,7 +106,6 @@ public class EmissionsPerVehicle implements MATSimAppCommand {
     public Integer call() throws Exception {
 
         Config config = prepareConfig();
-
         config.vehicles().setVehiclesFile("/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/projects/output/v3.0/base-case-continued/output_gladbeck-v3.0-3pct.output_vehicles.xml.gz");
         setEmissionsConfigs(config);
         config.network().setChangeEventsInputFile("/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/projects/output/v3.0/base-case-continued/output_gladbeck-v3.0-3pct.output_networkChangeEvents.xml.gz");
@@ -114,6 +115,17 @@ public class EmissionsPerVehicle implements MATSimAppCommand {
 
         Scenario scenario = ScenarioUtils.loadScenario(config);
         prepareVehicleTypesForEmissionAnalysis(scenario);
+
+        //set track or footway manually to path as it is not included in HBEFA mapping
+        for (Link link : scenario.getNetwork().getLinks().values()) {
+            String type = (String) link.getAttributes().getAttribute("type");
+            if (type != null && type.equals("track") || type != null && type.equals("footway")) {
+                link.getAttributes().putAttribute("type", "path");
+            }
+        }
+
+        HbefaRoadTypeMapping roadTypeMapping = OsmHbefaMapping.build();
+        roadTypeMapping.addHbefaMappings(scenario.getNetwork());
 
 
         Network filteredNetwork;
@@ -168,7 +180,7 @@ public class EmissionsPerVehicle implements MATSimAppCommand {
         //writeOutput(filteredNetwork, emissionsEventHandler);
 
         writeTotal(filteredNetwork, emissionsEventHandler);
-
+        writeEmissionsByNetworkMode(emissionsByVehicleType);
         writeEmissionsPerVehicle(emissionsPerVehicle);
 
 
@@ -196,7 +208,7 @@ public class EmissionsPerVehicle implements MATSimAppCommand {
         log.info("Writing emissions by vehicle type...");
         Map<String, Object2DoubleMap<Pollutant>> pollutants = emissionsByVehicleType.getByNetworkMode();
 
-        CSVPrinter emissionsCSV = new CSVPrinter(Files.newBufferedWriter(output.getPath("emissions_per_network_mode.csv")), CSVFormat.DEFAULT);
+        CSVPrinter emissionsCSV = new CSVPrinter(Files.newBufferedWriter(Path.of("/Users/gregorr/Documents/work/stuff/analysisGlaMoBi/forTrainWork/test/emissions_per_network_mode.csv")), CSVFormat.DEFAULT);
 
         emissionsCSV.print("vehicleType");
         emissionsCSV.print("pollutant");
