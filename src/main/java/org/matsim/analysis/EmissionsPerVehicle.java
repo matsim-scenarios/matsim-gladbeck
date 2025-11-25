@@ -156,7 +156,7 @@ public class EmissionsPerVehicle implements MATSimAppCommand {
         injector.getInstance(EmissionModule.class);
 
         //String eventsFile = ApplicationUtils.matchInput("events", input.getRunDirectory()).toString();
-        String eventsFile = "/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/projects/output/v3.0/base-case-continued/output_gladbeck-v3.0-3pct.output_events.xml.gz";
+        String eventsFile = "/Users/gregorr/Documents/work/respos/public-svn/matsim/scenarios/countries/de/gladbeck/glamobi/projects/output/v3.0/klima-taler-1EUR/output_gladbeck-v3.0-3pct.output_events.xml.gz";
 
 
         EmissionsOnLinkEventHandler emissionsEventHandler = new EmissionsOnLinkEventHandler(3600, 86400);
